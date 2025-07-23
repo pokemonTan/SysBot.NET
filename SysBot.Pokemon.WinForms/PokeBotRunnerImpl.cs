@@ -1,8 +1,11 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
+using SysBot.Base;
 using SysBot.Pokemon.Discord;
 using SysBot.Pokemon.Twitch;
 using SysBot.Pokemon.WinForms;
+using SysBot.Pokemon.QQ;
 using SysBot.Pokemon.YouTube;
+using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,12 +21,14 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
 
     private TwitchBot<T>? Twitch;
     private YouTubeBot<T>? YouTube;
+    private MiraiQQBot<T>? QQ;
 
     protected override void AddIntegrations()
     {
         AddDiscordBot(Hub.Config.Discord.Token);
         AddTwitchBot(Hub.Config.Twitch);
         AddYouTubeBot(Hub.Config.YouTube);
+        AddQQBot(Hub.Config.QQ);
     }
 
     private void AddTwitchBot(TwitchSettings config)
@@ -70,5 +75,15 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
             return;
         var bot = new SysCord<T>(this);
         Task.Run(() => bot.MainAsync(apiToken, CancellationToken.None));
+    }
+
+    private void AddQQBot(QQSettings config)
+    {
+        if (string.IsNullOrWhiteSpace(config.VerifyKey) || string.IsNullOrWhiteSpace(config.Address)) return;
+        if (string.IsNullOrWhiteSpace(config.QQ.ToString()) || string.IsNullOrWhiteSpace(config.GroupIdList)) return;
+        if (QQ != null) return;
+        //add qq bot
+        QQ = new MiraiQQBot<T>(config, Hub, this);
+        LogUtil.LogInfo("已集成QQ", "集成");
     }
 }

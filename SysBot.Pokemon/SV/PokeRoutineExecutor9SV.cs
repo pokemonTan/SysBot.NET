@@ -40,6 +40,7 @@ public abstract class PokeRoutineExecutor9SV(PokeBotState Config) : PokeRoutineE
     {
         // Shouldn't be reading anything but box1slot1 here. Slots are not consecutive.
         var jumps = Offsets.BoxStartPokemonPointer.ToArray();
+        LogUtil.LogInfo($"执行方法ReadBoxPokemon（读取第一个箱子第一个槽的宝可梦）", "测试");
         return ReadPokemonPointer(jumps, BoxFormatSlotSize, token);
     }
 
@@ -58,6 +59,7 @@ public abstract class PokeRoutineExecutor9SV(PokeBotState Config) : PokeRoutineE
 
     public Task SetCurrentBox(byte box, CancellationToken token)
     {
+        LogUtil.LogInfo($"正在执行方法SetCurrentBox（设置当前箱子）", "测试");
         return SwitchConnection.PointerPoke([box], Offsets.CurrentBoxPointer, token);
     }
 
@@ -234,6 +236,7 @@ public abstract class PokeRoutineExecutor9SV(PokeBotState Config) : PokeRoutineE
     // Only used to check if we made it off the title screen; the pointer isn't viable until a few seconds after clicking A.
     private async Task<bool> IsOnOverworldTitle(CancellationToken token)
     {
+        Log("执行IsOnOverworldTitle,判断是否野外的标题");
         var (valid, offset) = await ValidatePointerAll(Offsets.OverworldPointer, token).ConfigureAwait(false);
         if (!valid)
             return false;
@@ -243,6 +246,7 @@ public abstract class PokeRoutineExecutor9SV(PokeBotState Config) : PokeRoutineE
     // 0x10 if fully loaded into Poké Portal.
     public async Task<bool> IsInPokePortal(ulong offset, CancellationToken token)
     {
+        Log("执行IsInPokePortal,判断是否入口站的指针,0x10是完全加载到宝可梦入口站中");
         var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 1, token).ConfigureAwait(false);
         return data[0] == 0x10;
     }
@@ -250,12 +254,14 @@ public abstract class PokeRoutineExecutor9SV(PokeBotState Config) : PokeRoutineE
     // 0x14 in a box and during trades, trade evolutions, and move learning.
     public async Task<bool> IsInBox(ulong offset, CancellationToken token)
     {
+        Log("执行IsInBox,判断是否在箱子里，0x14在盒子里，在交换过程中，在招式学习中");
         var data = await SwitchConnection.ReadBytesAbsoluteAsync(offset, 1, token).ConfigureAwait(false);
         return data[0] == 0x14;
     }
 
     public async Task<TextSpeedOption> GetTextSpeed(CancellationToken token)
     {
+        Log("执行GetTextSpeed,获取文本速度");
         var data = await SwitchConnection.PointerPeek(1, Offsets.ConfigPointer, token).ConfigureAwait(false);
         return (TextSpeedOption)(data[0] & 3);
     }

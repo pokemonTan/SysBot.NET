@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
+using System.Runtime;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
@@ -12,6 +13,9 @@ public sealed class PokeTradeHubConfig : BaseConfig
 
     [Browsable(false)]
     public override bool Shuffled => Distribution.Shuffled;
+
+    [Category(FeatureToggle), Description("Method for detecting the overworld. Original method may not work consistently for some users, while ConsoleLanguageSpecific method requires your Switch console language.")]
+    public ScreenDetectionMode ScreenDetection { get; set; } = ScreenDetectionMode.ConsoleLanguageSpecific;
 
     [Category(Operation)]
     [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -67,8 +71,14 @@ public sealed class PokeTradeHubConfig : BaseConfig
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public YouTubeSettings YouTube { get; set; } = new();
 
+    [Category(Integration), Description("QQ机器人的集成.")]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public QQSettings QQ { get; set; } = new();
+
     [Category(Integration), Description("Configure generation of assets for streaming.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
+
+    // Integration
     public StreamSettings Stream { get; set; } = new();
 
     [Category(Integration), Description("Allows favored users to join the queue with a more favorable position than unfavored users.")]

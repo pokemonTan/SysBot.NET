@@ -1,5 +1,6 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace SysBot.Pokemon;
@@ -43,16 +44,23 @@ public class PokeTradeDetail<TPoke>(TPoke TradeData, PokeTradeTrainerInfo Traine
     /// <summary> Indicates if the trade data is currently being traded. </summary>
     public bool IsProcessing;
 
+    public bool IsFinishedPreview;
+
+    /// <summary> Customized trade parameters. </summary>
+    public Dictionary<string, object> Context = new();
+
     public void TradeInitialize(PokeRoutineExecutor<TPoke> routine) => Notifier.TradeInitialize(routine, this);
+    public void TradePreviewPokemon(PokeRoutineExecutor<TPoke> routine, string base64Image1, string base64Image2, string base64Image3) => Notifier.TradePreviewPokemon(routine, base64Image1, base64Image2, base64Image3, this);
     public void TradeSearching(PokeRoutineExecutor<TPoke> routine) => Notifier.TradeSearching(routine, this);
+    public void TradeSearchingWithSecond(PokeRoutineExecutor<TPoke> routine, int second, bool needScreenShot) => Notifier.TradeSearchingWithSecond(routine, this, second, needScreenShot);
     public void TradeCanceled(PokeRoutineExecutor<TPoke> routine, PokeTradeResult msg) => Notifier.TradeCanceled(routine, this, msg);
 
-    public virtual void TradeFinished(PokeRoutineExecutor<TPoke> routine, TPoke result)
-    {
-        Notifier.TradeFinished(routine, this, result);
-    }
+    public virtual void TradeFinished(PokeRoutineExecutor<TPoke> routine, TPoke result) => Notifier.TradeFinished(routine, this, result);
+    public virtual void TradeFinishedWithImage(PokeRoutineExecutor<TPoke> routine, TPoke result, string base64Image, SharePartnerInfo sharePartnerInfo) => Notifier.TradeFinishedWithImage(routine, this, result, base64Image, sharePartnerInfo);
+    public virtual int TradeFinishedWithImageAndElapsedTime(PokeRoutineExecutor<TPoke> routine, TPoke result, string base64Image, int elapsedTime, SharePartnerInfo sharePartnerInfo) => Notifier.TradeFinishedWithImageAndElapsedTime(routine, this, result, base64Image, elapsedTime, sharePartnerInfo);
 
     public void SendNotification(PokeRoutineExecutor<TPoke> routine, string message) => Notifier.SendNotification(routine, this, message);
+    public void SendNotificationWithImage(PokeRoutineExecutor<TPoke> routine, string message, string base64Image) => Notifier.SendNotificationWithImage(routine, this, message, base64Image);
     public void SendNotification(PokeRoutineExecutor<TPoke> routine, PokeTradeSummary obj) => Notifier.SendNotification(routine, this, obj);
     public void SendNotification(PokeRoutineExecutor<TPoke> routine, TPoke obj, string message) => Notifier.SendNotification(routine, this, obj, message);
 

@@ -12,9 +12,19 @@ public class PokeTradeLogNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         LogUtil.LogInfo($"Starting trade loop for {info.Trainer.TrainerName}, sending {GameInfo.GetStrings("en").Species[info.TradeData.Species]}", routine.Connection.Label);
     }
 
+    public void TradePreviewPokemon(PokeRoutineExecutor<T> routine, string base64Image1, string base64Image2, string base64Image3, PokeTradeDetail<T> info)
+    {
+        LogUtil.LogInfo($"开始宝可梦预览 {info.Trainer.TrainerName}, 正在发送 {GameInfo.GetStrings("en").Species[info.TradeData.Species]}", routine.Connection.Label);
+    }
+
     public void TradeSearching(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info)
     {
         LogUtil.LogInfo($"Searching for trade with {info.Trainer.TrainerName}, sending {GameInfo.GetStrings("en").Species[info.TradeData.Species]}", routine.Connection.Label);
+    }
+
+    public void TradeSearchingWithSecond(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, int second, bool needScreenShot)
+    {
+        LogUtil.LogInfo($"正在搜寻 {info.Trainer.TrainerName}, 派送 {GameInfo.GetStrings("en").Species[info.TradeData.Species]}, 将等待 [{second}] 秒", routine.Connection.Label);
     }
 
     public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
@@ -34,7 +44,25 @@ public class PokeTradeLogNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         OnFinish?.Invoke(routine);
     }
 
+    public void TradeFinishedWithImage(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string base64Image, SharePartnerInfo sharePartnerInfo)
+    {
+        LogUtil.LogInfo($"Finished trading {info.Trainer.TrainerName} {GameInfo.GetStrings("en").Species[info.TradeData.Species]} for {GameInfo.GetStrings("en").Species[result.Species]}", routine.Connection.Label);
+        OnFinish?.Invoke(routine);
+    }
+
+    public int TradeFinishedWithImageAndElapsedTime(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string base64Image, int elapsedTime, SharePartnerInfo sharePartnerInfo)
+    {
+        LogUtil.LogInfo($"Finished trading {info.Trainer.TrainerName} {GameInfo.GetStrings("en").Species[info.TradeData.Species]} for {GameInfo.GetStrings("en").Species[result.Species]}", routine.Connection.Label);
+        OnFinish?.Invoke(routine);
+        return 0;
+    }
+
     public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message)
+    {
+        LogUtil.LogInfo(message, routine.Connection.Label);
+    }
+
+    public void SendNotificationWithImage(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message, string base64Image)
     {
         LogUtil.LogInfo(message, routine.Connection.Label);
     }

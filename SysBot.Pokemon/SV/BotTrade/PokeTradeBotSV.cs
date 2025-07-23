@@ -56,6 +56,8 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
     // Track the last Pokémon we were offered since it persists between trades.
     private byte[] lastOffered = new byte[8];
 
+    //TradeFinishedImageRecord tradeFinishedRecord = new TradeFinishedImageRecord();
+
     public override async Task MainLoop(CancellationToken token)
     {
         try
@@ -204,17 +206,19 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         {
             detail.IsRetry = true;
             Hub.Queues.Enqueue(type, detail, Math.Min(priority, PokeTradePriorities.Tier2));
-            detail.SendNotification(this, "Oops! Something happened. I'll requeue you for another attempt.");
+            Log($"发生错误，已重新加入队列[{result}]");
         }
         else
         {
-            detail.SendNotification(this, $"Oops! Something happened. Canceling the trade: {result}.");
+            Log($"发生错误，取消交换: {result}.");
             detail.TradeCanceled(this, result);
         }
     }
 
     private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV9SV sav, PokeTradeDetail<PK9> poke, CancellationToken token)
     {
+        //tradeFinishedRecord.Image1 = tradeFinishedRecord.Image2 = tradeFinishedRecord.Image3 = tradeFinishedRecord.Image4 = tradeFinishedRecord.Image5 = "";
+        //ScreenCaptureResult screenCaptureResult = new ScreenCaptureResult();
         // Update Barrier Settings
         UpdateBarrier(poke.IsSynchronized);
         poke.TradeInitialize(this);
@@ -249,12 +253,40 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         // Assumes we're freshly in the Portal and the cursor is over Link Trade.
         Log("Selecting Link Trade.");
 
+        //screenCaptureResult = await CaptureScreenWithPath(token);
+
+        //if (Common.ContainsAllSubstrings(await Common.ImageOCRChinese(screenCaptureResult.FilePath), new string[] { "信息", "结束" }))
+        //{
+        //    LogUtil.LogInfo($"[输入连接交换密码前]检测到新闻，关闭它！截图[{screenCaptureResult.FilePath}]", "截图");
+        //    Common.DeleteFile(screenCaptureResult.FilePath);//删除文件
+        //    await Click(B, 1_000, token).ConfigureAwait(false);
+        //    await Task.Delay(0_500, token).ConfigureAwait(false);
+        //    await Click(B, 1_000, token).ConfigureAwait(false);
+        //}
+
+        // Handle the news popping up.
+        if (await SwitchConnection.IsProgramRunning(LibAppletWeID, token).ConfigureAwait(false))
+        {
+            await Task.Delay(5_000, token).ConfigureAwait(false);
+            await Click(B, 2_000, token).ConfigureAwait(false);
+        }
+
         await Click(A, 1_500, token).ConfigureAwait(false);
         // Make sure we clear any Link Codes if we're not in Distribution with fixed code, and it wasn't entered last round.
         if (poke.Type != PokeTradeType.Random || !LastTradeDistributionFixed)
         {
             await Click(X, 1_000, token).ConfigureAwait(false);
             await Click(PLUS, 1_000, token).ConfigureAwait(false);
+
+            //screenCaptureResult = await CaptureScreenWithPath(token);
+            //if (!Common.ContainsAllSubstrings(await Common.ImageOCRChinese(screenCaptureResult.FilePath), new string[] { "输入", "退出" }))
+            //{
+            //    LogUtil.LogInfo($"[输入连接交换密码界面]截图[{screenCaptureResult.FilePath}]", "截图");
+            //    Common.DeleteFile(screenCaptureResult.FilePath);//删除文件
+            //    StartFromOverworld = false;
+            //    await RecoverToOverworld(token).ConfigureAwait(false);
+            //    return PokeTradeResult.RecoverStart;
+            //}
 
             // Loading code entry.
             if (poke.Type != PokeTradeType.Random)

@@ -44,10 +44,32 @@ namespace SysBot.Pokemon.WinForms
             RTB_Logs = new System.Windows.Forms.RichTextBox();
             B_Stop = new System.Windows.Forms.Button();
             B_Start = new System.Windows.Forms.Button();
+            Tab_Buttons = new System.Windows.Forms.TabPage();
+            ResetGame = new System.Windows.Forms.Button();
+            CaptureScreenButton = new System.Windows.Forms.Button();
+            btn_zr = new System.Windows.Forms.Button();
+            btn_zl = new System.Windows.Forms.Button();
+            btn_r = new System.Windows.Forms.Button();
+            btn_l = new System.Windows.Forms.Button();
+            btn_update_robot_info = new System.Windows.Forms.Button();
+            btn_plus = new System.Windows.Forms.Button();
+            btn_minus = new System.Windows.Forms.Button();
+            btn_home = new System.Windows.Forms.Button();
+            btn_screen_capture = new System.Windows.Forms.Button();
+            btn_b = new System.Windows.Forms.Button();
+            btn_a = new System.Windows.Forms.Button();
+            btn_y = new System.Windows.Forms.Button();
+            btn_x = new System.Windows.Forms.Button();
+            btn_arrow_down = new System.Windows.Forms.Button();
+            btn_arrow_right = new System.Windows.Forms.Button();
+            btn_arrow_left = new System.Windows.Forms.Button();
+            btn_arrow_up = new System.Windows.Forms.Button();
+            button1 = new System.Windows.Forms.Button();
             TC_Main.SuspendLayout();
             Tab_Bots.SuspendLayout();
             Tab_Hub.SuspendLayout();
             Tab_Logs.SuspendLayout();
+            Tab_Buttons.SuspendLayout();
             SuspendLayout();
             // 
             // TC_Main
@@ -76,7 +98,7 @@ namespace SysBot.Pokemon.WinForms
             Tab_Bots.Name = "Tab_Bots";
             Tab_Bots.Size = new System.Drawing.Size(525, 329);
             Tab_Bots.TabIndex = 0;
-            Tab_Bots.Text = "Bots";
+            Tab_Bots.Text = "机器人";
             Tab_Bots.UseVisualStyleBackColor = true;
             // 
             // CB_Protocol
@@ -233,6 +255,259 @@ namespace SysBot.Pokemon.WinForms
             Tab_Hub.ResumeLayout(false);
             Tab_Logs.ResumeLayout(false);
             ResumeLayout(false);
+            // 
+            // Tab_Buttons
+            // 
+            Tab_Buttons.Controls.Add(button1);
+            Tab_Buttons.Controls.Add(ResetGame);
+            Tab_Buttons.Controls.Add(CaptureScreenButton);
+            Tab_Buttons.Controls.Add(btn_zr);
+            Tab_Buttons.Controls.Add(btn_zl);
+            Tab_Buttons.Controls.Add(btn_r);
+            Tab_Buttons.Controls.Add(btn_l);
+            Tab_Buttons.Controls.Add(btn_update_robot_info);
+            Tab_Buttons.Controls.Add(btn_plus);
+            Tab_Buttons.Controls.Add(btn_minus);
+            Tab_Buttons.Controls.Add(btn_home);
+            Tab_Buttons.Controls.Add(btn_screen_capture);
+            Tab_Buttons.Controls.Add(btn_b);
+            Tab_Buttons.Controls.Add(btn_a);
+            Tab_Buttons.Controls.Add(btn_y);
+            Tab_Buttons.Controls.Add(btn_x);
+            Tab_Buttons.Controls.Add(btn_arrow_down);
+            Tab_Buttons.Controls.Add(btn_arrow_right);
+            Tab_Buttons.Controls.Add(btn_arrow_left);
+            Tab_Buttons.Controls.Add(btn_arrow_up);
+            Tab_Buttons.Location = new System.Drawing.Point(4, 26);
+            Tab_Buttons.Margin = new System.Windows.Forms.Padding(4);
+            Tab_Buttons.Name = "Tab_Buttons";
+            Tab_Buttons.Padding = new System.Windows.Forms.Padding(4);
+            Tab_Buttons.Size = new System.Drawing.Size(525, 374);
+            Tab_Buttons.TabIndex = 3;
+            Tab_Buttons.Text = "按键";
+            Tab_Buttons.UseVisualStyleBackColor = true;
+            // 
+            // ResetGame
+            // 
+            ResetGame.Location = new System.Drawing.Point(216, 220);
+            ResetGame.Name = "ResetGame";
+            ResetGame.Size = new System.Drawing.Size(75, 23);
+            ResetGame.TabIndex = 19;
+            ResetGame.Text = "重置模式";
+            ResetGame.UseVisualStyleBackColor = true;
+            ResetGame.Click += ResetGame_Click;
+            // 
+            // CaptureScreenButton
+            // 
+            CaptureScreenButton.Location = new System.Drawing.Point(60, 308);
+            CaptureScreenButton.Name = "CaptureScreenButton";
+            CaptureScreenButton.Size = new System.Drawing.Size(59, 23);
+            CaptureScreenButton.TabIndex = 17;
+            CaptureScreenButton.Text = "截图";
+            CaptureScreenButton.UseVisualStyleBackColor = true;
+            CaptureScreenButton.Click += CaptureScreenButton_Click;
+            // 
+            // btn_zr
+            // 
+            btn_zr.Font = new System.Drawing.Font("宋体", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+            btn_zr.Location = new System.Drawing.Point(497, 60);
+            btn_zr.Margin = new System.Windows.Forms.Padding(4);
+            btn_zr.Name = "btn_zr";
+            btn_zr.Size = new System.Drawing.Size(27, 30);
+            btn_zr.TabIndex = 16;
+            btn_zr.Text = "ZR";
+            btn_zr.UseVisualStyleBackColor = true;
+            btn_zr.Click += btn_zr_Click;
+            // 
+            // btn_zl
+            // 
+            btn_zl.Font = new System.Drawing.Font("宋体", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+            btn_zl.Location = new System.Drawing.Point(4, 60);
+            btn_zl.Margin = new System.Windows.Forms.Padding(4);
+            btn_zl.Name = "btn_zl";
+            btn_zl.Size = new System.Drawing.Size(27, 30);
+            btn_zl.TabIndex = 15;
+            btn_zl.Text = "ZL";
+            btn_zl.UseVisualStyleBackColor = true;
+            btn_zl.Click += btn_zl_Click;
+            // 
+            // btn_r
+            // 
+            btn_r.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
+            btn_r.Location = new System.Drawing.Point(467, 21);
+            btn_r.Margin = new System.Windows.Forms.Padding(4);
+            btn_r.Name = "btn_r";
+            btn_r.Size = new System.Drawing.Size(27, 30);
+            btn_r.TabIndex = 14;
+            btn_r.Text = "R";
+            btn_r.UseVisualStyleBackColor = true;
+            btn_r.Click += btn_r_Click;
+            // 
+            // btn_l
+            // 
+            btn_l.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
+            btn_l.Location = new System.Drawing.Point(30, 21);
+            btn_l.Margin = new System.Windows.Forms.Padding(4);
+            btn_l.Name = "btn_l";
+            btn_l.Size = new System.Drawing.Size(27, 30);
+            btn_l.TabIndex = 13;
+            btn_l.Text = "L";
+            btn_l.UseVisualStyleBackColor = true;
+            btn_l.Click += btn_l_Click;
+            // 
+            // btn_update_robot_info
+            // 
+            btn_update_robot_info.Location = new System.Drawing.Point(415, 301);
+            btn_update_robot_info.Margin = new System.Windows.Forms.Padding(4);
+            btn_update_robot_info.Name = "btn_update_robot_info";
+            btn_update_robot_info.Size = new System.Drawing.Size(88, 30);
+            btn_update_robot_info.TabIndex = 12;
+            btn_update_robot_info.Text = "更新机器人";
+            btn_update_robot_info.UseVisualStyleBackColor = true;
+            btn_update_robot_info.Click += btn_update_robot_info_Click;
+            // 
+            // btn_plus
+            // 
+            btn_plus.Location = new System.Drawing.Point(405, 21);
+            btn_plus.Margin = new System.Windows.Forms.Padding(4);
+            btn_plus.Name = "btn_plus";
+            btn_plus.Size = new System.Drawing.Size(27, 30);
+            btn_plus.TabIndex = 11;
+            btn_plus.Text = "✖";
+            btn_plus.UseVisualStyleBackColor = true;
+            btn_plus.Click += btn_plus_Click;
+            // 
+            // btn_minus
+            // 
+            btn_minus.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
+            btn_minus.Location = new System.Drawing.Point(92, 21);
+            btn_minus.Margin = new System.Windows.Forms.Padding(4);
+            btn_minus.Name = "btn_minus";
+            btn_minus.Size = new System.Drawing.Size(27, 30);
+            btn_minus.TabIndex = 10;
+            btn_minus.Text = "-";
+            btn_minus.UseVisualStyleBackColor = true;
+            btn_minus.Click += btn_minus_Click;
+            // 
+            // btn_home
+            // 
+            btn_home.Location = new System.Drawing.Point(405, 229);
+            btn_home.Margin = new System.Windows.Forms.Padding(4);
+            btn_home.Name = "btn_home";
+            btn_home.Size = new System.Drawing.Size(27, 30);
+            btn_home.TabIndex = 9;
+            btn_home.Text = "●";
+            btn_home.UseVisualStyleBackColor = true;
+            btn_home.Click += btn_home_Click;
+            // 
+            // btn_screen_capture
+            // 
+            btn_screen_capture.Location = new System.Drawing.Point(92, 229);
+            btn_screen_capture.Margin = new System.Windows.Forms.Padding(4);
+            btn_screen_capture.Name = "btn_screen_capture";
+            btn_screen_capture.Size = new System.Drawing.Size(27, 30);
+            btn_screen_capture.TabIndex = 8;
+            btn_screen_capture.Text = "█";
+            btn_screen_capture.UseVisualStyleBackColor = true;
+            btn_screen_capture.Click += btn_screen_capture_Click;
+            // 
+            // btn_b
+            // 
+            btn_b.Location = new System.Drawing.Point(435, 160);
+            btn_b.Margin = new System.Windows.Forms.Padding(4);
+            btn_b.Name = "btn_b";
+            btn_b.Size = new System.Drawing.Size(27, 30);
+            btn_b.TabIndex = 7;
+            btn_b.Text = "B";
+            btn_b.UseVisualStyleBackColor = true;
+            btn_b.Click += btn_b_Click;
+            // 
+            // btn_a
+            // 
+            btn_a.Location = new System.Drawing.Point(467, 124);
+            btn_a.Margin = new System.Windows.Forms.Padding(4);
+            btn_a.Name = "btn_a";
+            btn_a.Size = new System.Drawing.Size(27, 30);
+            btn_a.TabIndex = 6;
+            btn_a.Text = "A";
+            btn_a.UseVisualStyleBackColor = true;
+            btn_a.Click += btn_a_Click;
+            // 
+            // btn_y
+            // 
+            btn_y.Location = new System.Drawing.Point(405, 124);
+            btn_y.Margin = new System.Windows.Forms.Padding(4);
+            btn_y.Name = "btn_y";
+            btn_y.Size = new System.Drawing.Size(27, 30);
+            btn_y.TabIndex = 5;
+            btn_y.Text = "Y";
+            btn_y.UseVisualStyleBackColor = true;
+            btn_y.Click += btn_y_Click;
+            // 
+            // btn_x
+            // 
+            btn_x.Location = new System.Drawing.Point(435, 93);
+            btn_x.Margin = new System.Windows.Forms.Padding(4);
+            btn_x.Name = "btn_x";
+            btn_x.Size = new System.Drawing.Size(27, 30);
+            btn_x.TabIndex = 4;
+            btn_x.Text = "X";
+            btn_x.UseVisualStyleBackColor = true;
+            btn_x.Click += btn_x_Click;
+            // 
+            // btn_arrow_down
+            // 
+            btn_arrow_down.Location = new System.Drawing.Point(61, 160);
+            btn_arrow_down.Margin = new System.Windows.Forms.Padding(4);
+            btn_arrow_down.Name = "btn_arrow_down";
+            btn_arrow_down.Size = new System.Drawing.Size(27, 30);
+            btn_arrow_down.TabIndex = 3;
+            btn_arrow_down.Text = "↓";
+            btn_arrow_down.UseVisualStyleBackColor = true;
+            btn_arrow_down.Click += btn_arrow_down_Click;
+            // 
+            // btn_arrow_right
+            // 
+            btn_arrow_right.Location = new System.Drawing.Point(92, 124);
+            btn_arrow_right.Margin = new System.Windows.Forms.Padding(4);
+            btn_arrow_right.Name = "btn_arrow_right";
+            btn_arrow_right.Size = new System.Drawing.Size(27, 30);
+            btn_arrow_right.TabIndex = 2;
+            btn_arrow_right.Text = "→";
+            btn_arrow_right.UseVisualStyleBackColor = true;
+            btn_arrow_right.Click += btn_arrow_right_Click;
+            // 
+            // btn_arrow_left
+            // 
+            btn_arrow_left.Location = new System.Drawing.Point(30, 124);
+            btn_arrow_left.Margin = new System.Windows.Forms.Padding(4);
+            btn_arrow_left.Name = "btn_arrow_left";
+            btn_arrow_left.Size = new System.Drawing.Size(27, 30);
+            btn_arrow_left.TabIndex = 1;
+            btn_arrow_left.Text = "←";
+            btn_arrow_left.UseVisualStyleBackColor = true;
+            btn_arrow_left.Click += btn_arrow_left_Click;
+            // 
+            // btn_arrow_up
+            // 
+            btn_arrow_up.Location = new System.Drawing.Point(61, 93);
+            btn_arrow_up.Margin = new System.Windows.Forms.Padding(4);
+            btn_arrow_up.Name = "btn_arrow_up";
+            btn_arrow_up.Size = new System.Drawing.Size(27, 30);
+            btn_arrow_up.TabIndex = 0;
+            btn_arrow_up.Text = "↑";
+            btn_arrow_up.UseVisualStyleBackColor = true;
+            btn_arrow_up.Click += btn_arrow_up_Click;
+            // 
+            // button1
+            // 
+            button1.Location = new System.Drawing.Point(216, 160);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(75, 23);
+            button1.TabIndex = 20;
+            button1.Text = "button1";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
 
         }
 
@@ -251,6 +526,27 @@ namespace SysBot.Pokemon.WinForms
         private System.Windows.Forms.Button B_New;
         private System.Windows.Forms.FlowLayoutPanel FLP_Bots;
         private System.Windows.Forms.ComboBox CB_Protocol;
+        private System.Windows.Forms.TabPage Tab_Buttons;
+        private System.Windows.Forms.Button btn_plus;
+        private System.Windows.Forms.Button btn_minus;
+        private System.Windows.Forms.Button btn_home;
+        private System.Windows.Forms.Button btn_screen_capture;
+        private System.Windows.Forms.Button btn_b;
+        private System.Windows.Forms.Button btn_a;
+        private System.Windows.Forms.Button btn_y;
+        private System.Windows.Forms.Button btn_x;
+        private System.Windows.Forms.Button btn_arrow_down;
+        private System.Windows.Forms.Button btn_arrow_right;
+        private System.Windows.Forms.Button btn_arrow_left;
+        private System.Windows.Forms.Button btn_arrow_up;
+        private System.Windows.Forms.Button btn_update_robot_info;
+        private System.Windows.Forms.Button btn_r;
+        private System.Windows.Forms.Button btn_l;
+        private System.Windows.Forms.Button btn_zr;
+        private System.Windows.Forms.Button btn_zl;
+        private System.Windows.Forms.Button CaptureScreenButton;
+        private System.Windows.Forms.Button ResetGame;
+        private System.Windows.Forms.Button button1;
     }
 }
 

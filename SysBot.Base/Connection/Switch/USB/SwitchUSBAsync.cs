@@ -142,4 +142,13 @@ public sealed class SwitchUSBAsync(int Port) : SwitchUSB(Port), ISwitchConnectio
             return BitConverter.ToUInt64(baseBytes, 0);
         }, token);
     }
+
+    public Task<byte[]> CaptureCurrentScreen(CancellationToken token)
+    {
+        return Task.Run(() =>
+        {
+            Send(SwitchCommand.CaptureCurrentScreen(false));
+            return ReadBulkUSB();
+        }, token);
+    }
 }

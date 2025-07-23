@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,6 +81,7 @@ public abstract class SwitchRoutineExecutor<T> : RoutineExecutor<T> where T : cl
     {
         var sw = new Stopwatch();
         sw.Start();
+        int readInteval = 0;
         do
         {
             var task = absolute
@@ -87,9 +90,71 @@ public abstract class SwitchRoutineExecutor<T> : RoutineExecutor<T> where T : cl
             var result = await task.ConfigureAwait(false);
             if (match == result.SequenceEqual(comparison))
                 return true;
-
+            readInteval++;
+            //if (readInteval % 10 == 0)
+            //{
+            //    Log($"正在读取[{offset:X16}]的变化,已等待[{sw.ElapsedMilliseconds}]毫秒,仍需要等待[{waitms - sw.ElapsedMilliseconds}]毫秒");
+            //}
             await Task.Delay(waitInterval, token).ConfigureAwait(false);
         } while (sw.ElapsedMilliseconds < waitms);
+        Log($"读取[{offset:X16}]的变化失败，等待超时");
         return false;
+    }
+
+    /// <summary>
+    /// 返回当前截图文件路径
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public async Task<string> CaptureCurrentScreenFilePath(CancellationToken token)
+    {
+        byte[] screenData = await SwitchConnection.CaptureCurrentScreen(token).ConfigureAwait(false);
+        string filePath = "";
+        try
+        {
+            // 获取当前日期和时间
+            DateTime now = DateTime.Now;
+            // 格式化日期和时间
+            string formattedDateTime = now.ToString("yyyyMMddHHmmssfff");
+            string screenDir = "D:\\SwitchScreen";
+            // 检查目录是否存在
+            if (!Directory.Exists(screenDir))
+            {
+                // 如果目录不存在，则创建它
+                Directory.CreateDirectory(screenDir);
+            }
+            filePath = $@"{screenDir}\{formattedDateTime}.jpg";
+            System.IO.File.WriteAllBytes(filePath, screenData);
+            LogUtil.LogInfo($"屏幕截图已保存为JPG文件：[{filePath}]", "截图");
+            return filePath;
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogInfo("保存屏幕截图时出错：" + ex.Message, "截图");
+            return filePath;
+        }
+    }
+
+    /// <summary>
+    /// 返回当前截图文件Base64字符串
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public async Task<string> CaptureCurrentScreenBase64(CancellationToken token)
+    {
+        byte[] screenData = await SwitchConnection.CaptureCurrentScreen(token).ConfigureAwait(false);
+        string base64String = "";
+        try
+        {
+            // 将字节数组转换为Base64字符串
+            base64String = Convert.ToBase64String(screenData);
+            LogUtil.LogInfo($"屏幕截图已转换为Base64字符串，长度：{base64String.Length} 字符", "截图");
+            return base64String;
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogInfo("保存屏幕截图时出错：" + ex.Message, "截图");
+            return "";
+        }
     }
 }

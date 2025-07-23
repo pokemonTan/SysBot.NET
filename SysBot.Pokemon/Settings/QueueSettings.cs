@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
@@ -21,7 +21,7 @@ public class QueueSettings
     public int MaxQueueCount { get; set; } = 999;
 
     [Category(FeatureToggle), Description("Allows users to dequeue while being traded.")]
-    public bool CanDequeueIfProcessing { get; set; }
+    public bool CanDequeueIfProcessing { get; set; } = true;
 
     [Category(FeatureToggle), Description("Determines how Flex Mode will process the queues.")]
     public FlexYieldMode FlexMode { get; set; } = FlexYieldMode.Weighted;

@@ -1,4 +1,4 @@
-﻿using PKHeX.Core;
+using PKHeX.Core;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -86,4 +86,7 @@ public class LegalitySettings
 
     [Category(Misc), Description("Zero out HOME trackers for cloned and user-requested PKM files. It is recommended to leave this disabled to avoid creating invalid HOME data.")]
     public bool ResetHOMETracker { get; set; }
+
+    [Category(Misc), Description("覆盖初训家信息为交换对象")]
+    public bool UseTradePartnerInfo { get; set; } = true;
 }

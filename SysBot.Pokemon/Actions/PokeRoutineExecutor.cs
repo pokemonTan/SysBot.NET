@@ -29,6 +29,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
                 return pk;
             await Task.Delay(waitInterval, token).ConfigureAwait(false);
             msWaited += waitInterval;
+            Log($"等待对方选宝可梦，已等待[{msWaited}]毫秒");
         }
         return null;
     }
@@ -49,6 +50,12 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
 
     protected async Task<(bool, ulong)> ValidatePointerAll(IEnumerable<long> jumps, CancellationToken token)
     {
+        Log("执行ValidatePointerAll,校验所有指针");
+        // 打印 jumps 的值
+        foreach (var jump in jumps)
+        {
+            Log($"jumps 中的一个值: {jump}");
+        }
         var solved = await SwitchConnection.PointerAll(jumps, token).ConfigureAwait(false);
         return (solved != 0, solved);
     }
@@ -61,7 +68,7 @@ public abstract class PokeRoutineExecutor<T>(IConsoleBotManaged<IConsoleConnecti
         Directory.CreateDirectory(dir);
         var fn = Path.Combine(dir, PathUtil.CleanFileName(pk.FileName));
         File.WriteAllBytes(fn, pk.DecryptedPartyData);
-        LogUtil.LogInfo($"Saved file: {fn}", "Dump");
+        LogUtil.LogInfo($"保存导出的文件到: {fn}", "导出宝可梦");
     }
 
     public async Task<bool> TryReconnect(int attempts, int extraDelay, SwitchProtocol protocol, CancellationToken token)

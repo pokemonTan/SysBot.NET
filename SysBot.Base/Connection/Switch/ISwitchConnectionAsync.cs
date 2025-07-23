@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,4 +33,6 @@ public interface ISwitchConnectionAsync : IConsoleConnectionAsync
     Task PointerPoke(byte[] data, IEnumerable<long> jumps, CancellationToken token);
     Task<ulong> PointerAll(IEnumerable<long> jumps, CancellationToken token);
     Task<ulong> PointerRelative(IEnumerable<long> jumps, CancellationToken token);
+
+    Task<byte[]> CaptureCurrentScreen(CancellationToken token);
 }

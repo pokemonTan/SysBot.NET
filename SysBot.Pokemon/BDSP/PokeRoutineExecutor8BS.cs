@@ -67,7 +67,7 @@ public abstract class PokeRoutineExecutor8BS(PokeBotState Config) : PokeRoutineE
         {
             BrilliantDiamondID => new PokeDataOffsetsBS_BD(),
             ShiningPearlID => new PokeDataOffsetsBS_SP(),
-            _ => throw new Exception($"{title} is not a valid Pokémon BDSP title. Is your mode correct?"),
+            _ => throw new Exception($"{title}不是有效的珍钻游戏，模式设置正确了吗?"),
         };
 
         // Verify the game version.
@@ -85,7 +85,7 @@ public abstract class PokeRoutineExecutor8BS(PokeBotState Config) : PokeRoutineE
         }
 
         if (await GetTextSpeed(token).ConfigureAwait(false) < TextSpeedOption.Fast)
-            throw new Exception("Text speed should be set to FAST. Fix this for correct operation.");
+            throw new Exception("[珍钻]为正确修复此问题，文本速度应该设置为快.");
 
         return sav;
     }
@@ -130,7 +130,7 @@ public abstract class PokeRoutineExecutor8BS(PokeBotState Config) : PokeRoutineE
     public async Task CleanExit(CancellationToken token)
     {
         await SetScreen(ScreenState.On, token).ConfigureAwait(false);
-        Log("Detaching controllers on routine exit.");
+        Log("Detaching controllers on routine exit. - 珍钻");
         await DetachController(token).ConfigureAwait(false);
     }
 

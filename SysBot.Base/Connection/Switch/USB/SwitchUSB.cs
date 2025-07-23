@@ -20,6 +20,7 @@ public abstract class SwitchUSB : IConsoleConnection
     {
         Port = port;
         Name = Label = $"USB-{port}";
+        Log($"已实例化保护方法SwitchUSB，端口号为[{port}]");
     }
 
     public void Log(string message) => LogInfo(message);
@@ -45,11 +46,12 @@ public abstract class SwitchUSB : IConsoleConnection
 
     public void Connect()
     {
+        Log("正在查找所有LibUSB设备");
         SwDevice = TryFindUSB();
         if (SwDevice == null)
-            throw new Exception("USB device not found.");
+            throw new Exception("没有找到USB设备.");
         if (SwDevice is not IUsbDevice usb)
-            throw new Exception("Device is using a WinUSB driver. Use libusbK and create a filter.");
+            throw new Exception("设备正在使用WinUSB驱动,使用 libusbK 然后创建一个过滤器.");
 
         lock (_sync)
         {
@@ -89,7 +91,7 @@ public abstract class SwitchUSB : IConsoleConnection
                 ur.DeviceProperties.TryGetValue("Address", out var addr);
                 if (Port.ToString() != addr?.ToString())
                     continue;
-
+                Log("已找到LibUSB设备");
                 return ur.Device;
             }
         }

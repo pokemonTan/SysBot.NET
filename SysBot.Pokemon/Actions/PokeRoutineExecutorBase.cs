@@ -31,7 +31,7 @@ public abstract class PokeRoutineExecutorBase(IConsoleBotManaged<IConsoleConnect
         GameLang = (LanguageID)sav.Language;
         Version = sav.Version;
         InGameName = sav.OT;
-        Connection.Label = $"{InGameName}-{sav.DisplayTID:000000}";
+        Connection.Label = $"{InGameName}-{sav.DisplayTID:000000}-[{sav.DisplaySID:0000}]";
         Log($"{Connection.Name} identified as {Connection.Label}, using {GameLang}.");
     }
 

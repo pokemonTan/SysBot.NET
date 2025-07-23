@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -235,5 +236,57 @@ public sealed class SwitchSocketAsync : SwitchSocket, ISwitchConnectionAsync
         var offsetBytes = await ReadBytesFromCmdAsync(SwitchCommand.PointerRelative(jumps), sizeof(ulong), token).ConfigureAwait(false);
         Array.Reverse(offsetBytes, 0, 8);
         return BitConverter.ToUInt64(offsetBytes, 0);
+    }
+
+    public async Task<byte[]> CaptureCurrentScreen(CancellationToken token)
+    {
+        return await ReadAllBytesFromCmdAsync(SwitchCommand.CaptureCurrentScreen(true), token);
+    }
+
+    private async Task<byte[]> ReadAllBytesFromCmdAsync(byte[] cmd, CancellationToken token)
+    {
+        // 发送命令
+        await SendAsync(cmd, token).ConfigureAwait(false);
+        // 初始化一个列表来存储接收到的字节
+        using var ms = new MemoryStream();
+        byte[] tempBuffer = ArrayPool<byte>.Shared.Rent(0x7D000); // 临时缓冲区，可以根据需要调整大小
+        int bytesRead;
+
+        try
+        {
+            while (true)
+            {
+                // 接收数据到临时缓冲区
+                bytesRead = await Connection.ReceiveAsync(tempBuffer, token);
+                if (bytesRead == 0)
+                {
+                    // 连接关闭或没有更多数据可读
+                    throw new IOException("连接已关闭或没有更多数据可读。");
+                }
+
+                // 搜索换行符 
+                int newlineIndex = Array.IndexOf(tempBuffer, (byte)'\n', 0, bytesRead);
+                if (newlineIndex != -1)
+                {
+                    // 如果找到了换行符，只复制前面的数据到MemoryStream
+                    ms.Write(tempBuffer, 0, newlineIndex + 1); // +1 是为了包含换行符本身
+                    break; // 数据包完整，跳出循环
+                }
+                else
+                {
+                    // 如果没有找到换行符，将全部数据写入MemoryStream
+                    ms.Write(tempBuffer, 0, bytesRead);
+                }
+            }
+
+            byte[] finalBuffer = ms.ToArray();
+            int dataLength = (int)ms.Position;
+            return DecodeResult(finalBuffer, dataLength);
+        }
+        finally
+        {
+            // 归还临时缓冲区
+            ArrayPool<byte>.Shared.Return(tempBuffer);
+        }
     }
 }

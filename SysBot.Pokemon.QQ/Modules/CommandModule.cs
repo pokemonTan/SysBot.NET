@@ -1,39 +1,33 @@
-using Mirai.Net.Data.Messages;
-using Mirai.Net.Data.Messages.Concretes;
-using Mirai.Net.Data.Messages.Receivers;
-using Mirai.Net.Modules;
-using Mirai.Net.Utils.Scaffolds;
 using PKHeX.Core;
 using System;
 using System.Linq;
-using System.Reactive.Linq;
 
 namespace SysBot.Pokemon.QQ;
 
-public class CommandModule<T> : IModule where T : PKM, new()
+public class CommandModule<T> where T : PKM, new()
 {
     public bool? IsEnable { get; set; } = true;
 
-    public void Execute(MessageReceiverBase @base)
-    {
-        var receiver = @base.Concretize<GroupMessageReceiver>();
-        QQSettings settings = MiraiQQBot<T>.Settings;
-        string groupId = receiver.Sender.Group.Id;
-        if (receiver.MessageChain.OfType<AtMessage>().All(x => x.Target != Convert.ToString((long)settings.QQ))) return;
+    //public void Execute(MessageReceiverBase @base)
+    //{
+    //    var receiver = @base.Concretize<GroupMessageReceiver>();
+    //    QQSettings settings = MiraiQQBot<T>.Settings;
+    //    string groupId = receiver.Sender.Group.Id;
+    //    if (receiver.MessageChain.OfType<AtMessage>().All(x => x.Target != Convert.ToString((long)settings.QQ))) return;
 
-        var text = receiver.MessageChain.OfType<PlainMessage>()?.FirstOrDefault()?.Text ?? "";
-        if (string.IsNullOrWhiteSpace(text)) return;
-        if (text.Trim().StartsWith("取消"))
-        {
-            var result = MiraiQQBot<T>.Info.ClearTrade(ulong.Parse(receiver.Sender.Id));
-            MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(receiver.Sender.Id).Plain($" {GetClearTradeMessage(result)}").Build(), groupId);
-        }
-        else if (text.Trim().StartsWith("位置"))
-        {
-            var result = MiraiQQBot<T>.Info.CheckPosition(ulong.Parse(receiver.Sender.Id));
-            MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(receiver.Sender.Id).Plain($" {GetQueueCheckResultMessage(result)}").Build(), groupId);
-        }
-    }
+    //    var text = receiver.MessageChain.OfType<PlainMessage>()?.FirstOrDefault()?.Text ?? "";
+    //    if (string.IsNullOrWhiteSpace(text)) return;
+    //    if (text.Trim().StartsWith("取消"))
+    //    {
+    //        var result = MiraiQQBot<T>.Info.ClearTrade(ulong.Parse(receiver.Sender.Id));
+    //        MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(receiver.Sender.Id).Plain($" {GetClearTradeMessage(result)}").Build(), groupId);
+    //    }
+    //    else if (text.Trim().StartsWith("位置"))
+    //    {
+    //        var result = MiraiQQBot<T>.Info.CheckPosition(ulong.Parse(receiver.Sender.Id));
+    //        MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(receiver.Sender.Id).Plain($" {GetQueueCheckResultMessage(result)}").Build(), groupId);
+    //    }
+    //}
 
     public static string GetQueueCheckResultMessage(QueueCheckResult<T> result)
     {

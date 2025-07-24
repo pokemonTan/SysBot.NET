@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-		<ProjectReference Include="..\Mirai.Net-2.4\Mirai.Net\Mirai.Net.csproj" />
 		<ProjectReference Include="..\NapCatScript.Core\NapCatScript.Core.csproj" />
 		<ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
 		<ProjectReference Include="..\SysBot.Pokemon\SysBot.Pokemon.csproj" />

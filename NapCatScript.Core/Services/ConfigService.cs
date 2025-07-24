@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace NapCatScript.Core.Services;
 
@@ -33,7 +34,7 @@ public class ConfigService
                 await sql.Insert(conf);
                 return true;
             } catch (Exception e) {
-                InstanceLog.Erro(e.Message, e.StackTrace);
+                Debug.WriteLine("设置配置项失败：" + e.Message);
                 return false;
             }
         }
@@ -42,7 +43,7 @@ public class ConfigService
             await sql.Update(conf);
             return true;
         }catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("设置配置项失败：" + e.Message);
             return false;
         }
     }

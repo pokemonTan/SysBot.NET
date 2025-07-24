@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace NapCatScript.Core;
 
@@ -52,7 +53,7 @@ public static class Utils
                             break;
                         }
                         catch (Exception e) {
-                            InstanceLog.Erro(e.Message, e.StackTrace);
+                            Debug.WriteLine(e.Message);
                             break;
                         }
                     }

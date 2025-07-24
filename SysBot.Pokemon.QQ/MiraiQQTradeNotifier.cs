@@ -2,17 +2,11 @@ using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Linq;
-using Mirai.Net.Utils.Scaffolds;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using Mirai.Net.Data.Shared;
-using Mirai.Net.Sessions.Http.Managers;
 using static System.Net.Mime.MediaTypeNames;
-using Manganese.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
-using Mirai.Net.Data.Messages;
 
 namespace SysBot.Pokemon.QQ;
 
@@ -46,15 +40,15 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
             string tid = regex.Match(message).Groups[1].ToString();
             regex = new Regex("SID: (\\d+)");
             string sid = regex.Match(message).Groups[1].ToString();
-            MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().Plain($"找到你了，你的SID7:{sid},TID7:{tid}").Build(), GroupId);
+            //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().Plain($"找到你了，你的SID7:{sid},TID7:{tid}").Build(), GroupId);
         }
         else if (message.StartsWith("批量"))
         {
-            MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().Plain(message).Build(), GroupId);
+            //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().Plain(message).Build(), GroupId);
         }
         else
         {
-            MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(message).Build(), GroupId);
+            //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(message).Build(), GroupId);
         }
     }
     public void TradeCanceled(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, PokeTradeResult msg)
@@ -62,7 +56,7 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         OnFinish?.Invoke(routine);
         var line = $"@{info.Trainer.TrainerName}: Trade canceled, {msg}";
         LogUtil.LogText(line);
-        MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(" 取消").Build(), GroupId);
+        //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(" 取消").Build(), GroupId);
     }
 
     public void TradeFinished(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result)
@@ -74,24 +68,24 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
             : "Trade finished!");
         LogUtil.LogText(message);
         string jsonResult = DecrPokemonGroupGold(info.Trainer.ID.ToString(), GroupId, new SharePartnerInfo("","","",0,0,0));
-        int code = Convert.ToInt32(jsonResult.Fetch("code"));
-        string? msg = jsonResult.Fetch("msg");
-        if (code == 200)
-        {
-            MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {msg}").Build(), GroupId);
-            LogUtil.LogInfo($"{info.Trainer.ID.ToString()}-{msg}", "测试");
-        }
-        else
-        {
-            MiraiQQBot<T>.SendGroupOrTempMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {msg}").Build(), info.Trainer.ID.ToString(), GroupId);
-            LogUtil.LogInfo($"{info.Trainer.ID.ToString()}-{msg}", "测试");
-        }
+        //int code = Convert.ToInt32(jsonResult.Fetch("code"));
+        //string? msg = jsonResult.Fetch("msg");
+        //if (code == 200)
+        //{
+        //    MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {msg}").Build(), GroupId);
+        //    LogUtil.LogInfo($"{info.Trainer.ID.ToString()}-{msg}", "测试");
+        //}
+        //else
+        //{
+        //    MiraiQQBot<T>.SendGroupOrTempMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {msg}").Build(), info.Trainer.ID.ToString(), GroupId);
+        //    LogUtil.LogInfo($"{info.Trainer.ID.ToString()}-{msg}", "测试");
+        //}
     }
 
     public void SendNotificationWithImage(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message, string base64Image)
     {
         LogUtil.LogText(message);
-        MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(message).ImageFromBase64(base64Image).Build(), GroupId);
+        //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(message).ImageFromBase64(base64Image).Build(), GroupId);
     }
 
     /// <summary>
@@ -110,16 +104,16 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
             : "Trade finished!");
         LogUtil.LogText(message);
         string jsonResult = DecrPokemonGroupGold(info.Trainer.ID.ToString(), GroupId, sharePartnerInfo);
-        int code = Convert.ToInt32(jsonResult.Fetch("code"));
-        string? responseMsg = jsonResult.Fetch("msg");
-        MessageChainBuilder builder = new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {responseMsg}");
-        string[] base64Array = base64Image.Split('#', StringSplitOptions.RemoveEmptyEntries);
-        foreach (var base64 in base64Array)
-        {
-            builder.ImageFromBase64(base64);
-        }
-        MessageChain finalMessageChain = builder.Build();
-        MiraiQQBot<T>.SendGroupOrTempMessage(finalMessageChain, info.Trainer.ID.ToString(), GroupId);
+        //int code = Convert.ToInt32(jsonResult.Fetch("code"));
+        //string? responseMsg = jsonResult.Fetch("msg");
+        //MessageChainBuilder builder = new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {responseMsg}");
+        //string[] base64Array = base64Image.Split('#', StringSplitOptions.RemoveEmptyEntries);
+        //foreach (var base64 in base64Array)
+        //{
+        //    builder.ImageFromBase64(base64);
+        //}
+        //MessageChain finalMessageChain = builder.Build();
+        //MiraiQQBot<T>.SendGroupOrTempMessage(finalMessageChain, info.Trainer.ID.ToString(), GroupId);
     }
 
     /// <summary>
@@ -138,20 +132,20 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
             : "Trade finished!");
         LogUtil.LogText(message);
         string jsonResult = DecrPokemonGroupGold(info.Trainer.ID.ToString(),  GroupId, sharePartnerInfo);
-        int code = Convert.ToInt32(jsonResult.Fetch("code"));
-        string? responseMsg = jsonResult.Fetch("msg");
-        MessageChainBuilder builder = new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {responseMsg}");
+        //int code = Convert.ToInt32(jsonResult.Fetch("code"));
+        //string? responseMsg = jsonResult.Fetch("msg");
+        //MessageChainBuilder builder = new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {responseMsg}");
         string[] base64Array = base64Image.Split('#', StringSplitOptions.RemoveEmptyEntries);
-        foreach (var base64 in base64Array)
-        {
-            builder.ImageFromBase64(base64);
-        }
-        MessageChain finalMessageChain = builder.Build();
-        MiraiQQBot<T>.SendGroupOrTempMessage(finalMessageChain, info.Trainer.ID.ToString(), GroupId);
-        int total_integral = Convert.ToInt32(jsonResult.Fetch("data.total_integral"));
-        LogUtil.LogInfo($"QQ[{info.Trainer.ID.ToString()}]在QQ群[{GroupId}]还剩余[{total_integral}]熊熊币", "接口查询");
-        string uploadJsonResult = UploadUserPokemon(info.Trainer.ID.ToString(), GroupId, Data, sharePartnerInfo);
-        return total_integral;
+        //foreach (var base64 in base64Array)
+        //{
+        //    builder.ImageFromBase64(base64);
+        //}
+        //MessageChain finalMessageChain = builder.Build();
+        //MiraiQQBot<T>.SendGroupOrTempMessage(finalMessageChain, info.Trainer.ID.ToString(), GroupId);
+        //int total_integral = Convert.ToInt32(jsonResult.Fetch("data.total_integral"));
+        //LogUtil.LogInfo($"QQ[{info.Trainer.ID.ToString()}]在QQ群[{GroupId}]还剩余[{total_integral}]熊熊币", "接口查询");
+        //string uploadJsonResult = UploadUserPokemon(info.Trainer.ID.ToString(), GroupId, Data, sharePartnerInfo);
+        return 0;
     }
 
     /// <summary>
@@ -189,7 +183,7 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         {
             text = $"\n批量派送{batchPKMs.Count}只宝可梦\n密码:{info.Code:0000 0000}\n状态:初始化";
         }
-        MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).Build(), GroupId);
+        //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).Build(), GroupId);
     }
 
     public void TradePreviewPokemon(PokeRoutineExecutor<T> routine, string base64Image1, string base64Image2, string base64Image3, PokeTradeDetail<T> info)
@@ -210,7 +204,7 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
             text = $"\n批量派送{batchPKMs.Count}只宝可梦\n密码:{info.Code:0000 0000}\n状态:初始化";
         }
         LogUtil.LogInfo(text, "消息");
-        MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).ImageFromBase64(base64Image1).ImageFromBase64(base64Image2).ImageFromBase64(base64Image3).Build(), GroupId);
+        //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).ImageFromBase64(base64Image1).ImageFromBase64(base64Image2).ImageFromBase64(base64Image3).Build(), GroupId);
         //string uploadJsonResult = UploadUserPokemon(info.Trainer.ID.ToString(), GroupId, Data, new SharePartnerInfo("", "", "", 0, 0, 0));
     }
 
@@ -233,11 +227,11 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
             string screenImageBase64Str = await routine.CaptureCurrentScreenBase64(CancellationToken.None);
             if (screenImageBase64Str == "")
             {
-                MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).Build(), GroupId);
+                //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).Build(), GroupId);
             }
             else
             {
-                MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).ImageFromBase64(screenImageBase64Str).Build(), GroupId);
+                //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).ImageFromBase64(screenImageBase64Str).Build(), GroupId);
             }
         });
     }
@@ -262,16 +256,16 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
                 string screenImageBase64Str = await routine.CaptureCurrentScreenBase64(CancellationToken.None);
                 if (screenImageBase64Str == "")
                 {
-                    MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).Build(), GroupId);
+                    //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).Build(), GroupId);
                 }
                 else
                 {
-                    MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).ImageFromBase64(screenImageBase64Str).Build(), GroupId);
+                    //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).ImageFromBase64(screenImageBase64Str).Build(), GroupId);
                 }
             }
             else
             {
-                MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).Build(), GroupId);
+                //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain(text).Build(), GroupId);
             }
         });
         
@@ -283,7 +277,7 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         if (message.Details.Count > 0)
             msg += ", " + string.Join(", ", message.Details.Select(z => $"{z.Heading}: {z.Detail}"));
         LogUtil.LogText(msg);
-        MiraiQQBot<T>.SendGroupMessage(msg, GroupId);
+        //MiraiQQBot<T>.SendGroupMessage(msg, GroupId);
     }
 
     public void SendNotification(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, T result, string message)
@@ -294,7 +288,7 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         {
             var text =
                 $"species:{result.Species}\npid:{result.PID}\nec:{result.EncryptionConstant}\nIVs:{string.Join(",", result.IVs)}\nisShiny:{result.IsShiny}";
-            MiraiQQBot<T>.SendGroupMessage(text, GroupId);
+            //MiraiQQBot<T>.SendGroupMessage(text, GroupId);
         }
     }
 }

@@ -1,6 +1,7 @@
-﻿using NapCatScript.Core.JsonFormat.EventJson;
+using NapCatScript.Core.JsonFormat.EventJson;
 using NapCatScript.Core.Model;
 using System.Buffers;
+using System.Diagnostics;
 
 namespace NapCatScript.Core.MsgHandle;
 public static class ReceiveMsg
@@ -33,7 +34,7 @@ public static class ReceiveMsg
             }
             return null;
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine(e.Message);
             if(memResult is not null) {
                 memResult.Dispose();
                 memResult.Close();
@@ -66,6 +67,7 @@ public static class ReceiveMsg
             msg = JsonSerializer.Deserialize<ArrayMsg>(value.msgString);
         }
         catch (Exception e) {
+            Debug.WriteLine(e.Message);
             msg = null;
         }
         
@@ -129,30 +131,44 @@ public static class ReceiveMsg
         //JsonDocument jsonObject = JsonSerializer.SerializeToDocument(data); //这样得到的是json字符串
         JsonDocument.TryParseValue(ref read, out JsonDocument? jsonObject);
         JsonElement? jsonRoot = jsonObject?.RootElement;
-        try {
+        try
+        {
             //post_type
-            if (jsonRoot is not null) {
-                if (jsonRoot.Value.TryGetProperty("post_type", out JsonElement type)) {//此属性决定是不是消息
-                    if (type.ToString() == "message") {
+            if (jsonRoot is not null)
+            {
+                if (jsonRoot.Value.TryGetProperty("post_type", out JsonElement type))
+                {//此属性决定是不是消息
+                    if (type.ToString() == "message")
+                    {
                         json = jsonRoot;
                         return true;
                     }
 
                     //上报自身消息
-                    if(type.ToString() == "message_sent") {
+                    if (type.ToString() == "message_sent")
+                    {
                         json = jsonRoot;
                         return true;
                     }
                     return false;
-                } else 
+                }
+                else
+                {
                     return false;
-            } else 
+
+                }
+            }
+            else
+            {
                 return false;
-        } catch (Exception e) {
+
+            }
+        }
+        catch (Exception e)
+        {
             Console.WriteLine(e.Message + "\n" + e.StackTrace);
             return false;
         }
-
     }
     //关于分片数组
     //  1. 指向给定数组的内存

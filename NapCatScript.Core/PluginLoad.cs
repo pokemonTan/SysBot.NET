@@ -1,6 +1,7 @@
-﻿using NapCatScript.Core;
+using NapCatScript.Core;
 using NapCatScript.Core.Services;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Loader;
 
@@ -65,7 +66,7 @@ public class PluginLoad : AssemblyLoadContext
                     obj.Init();
                     ps.Add(obj);
                 } catch (Exception e) {
-                    InstanceLog.Erro($"插件{pluginStartType.FullName} 创建失败！", e.Message, e.StackTrace);
+                    Debug.WriteLine($"插件{pluginStartType.FullName} 创建失败：" + e.Message);
                 }
             }
             #endregion

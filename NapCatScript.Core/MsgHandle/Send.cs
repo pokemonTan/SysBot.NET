@@ -1,8 +1,9 @@
-﻿using NapCatScript.Core.JsonFormat.GroupManagers;
+using NapCatScript.Core.JsonFormat.GroupManagers;
 using System.Net;
 using System.Net.Http.Headers;
 using NapCatScript.Core.JsonFormat.GetJsons;
 using static NapCatScript.Core.MsgHandle.SendMsg;
+using System.Diagnostics;
 
 namespace NapCatScript.Core.MsgHandle;
 public class Send
@@ -96,7 +97,7 @@ public class Send
                 return true;
             return false;
         } catch (Exception e) {
-            InstanceLog.Erro("上传私聊文件", e.Message, e.StackTrace);
+            Debug.WriteLine("上传私聊文件失败:" + e.Message);
             return false;
         }
     }
@@ -111,7 +112,7 @@ public class Send
         try {
             await MsgHandle.SendMsg.PostSend(HttpClient, UploadPrivateFileAPI, new upload_private_file(user_id, file, name).JsonText);
         } catch (Exception e) {
-            InstanceLog.Erro("上传私聊文件", e.Message, e.StackTrace);
+            Debug.WriteLine("上传私聊文件失败:" + e.Message);
         }
     }
     #endregion
@@ -129,7 +130,7 @@ public class Send
                 return true;
             return false;
         } catch (Exception e) {
-            InstanceLog.Erro("设置个性签名", e.Message, e.StackTrace);
+            Debug.WriteLine("设置个性签名失败:" + e.Message);
             return false;
         }
     }
@@ -141,7 +142,7 @@ public class Send
         try {
             await MsgHandle.SendMsg.PostSend(HttpClient, SetSelfLongnickAPI, new set_self_longnick(content).JsonText);
         } catch (Exception e) {
-            InstanceLog.Erro("设置个性签名", e.Message, e.StackTrace);
+            Debug.WriteLine("设置个性签名失败:" + e.Message);
         }
     }
     #endregion
@@ -159,7 +160,7 @@ public class Send
                 return true;
             return false;
         } catch (Exception e) {
-            InstanceLog.Erro("设置QQ头像", e.Message, e.StackTrace);
+            Debug.WriteLine("设置QQ头像失败:" + e.Message);
             return false;
         }
     }
@@ -171,7 +172,7 @@ public class Send
         try {
             await MsgHandle.SendMsg.PostSend(HttpClient, SetQQAvatarAPI, new set_qq_avatar(path).JsonText);
         } catch (Exception e) {
-            InstanceLog.Erro("设置QQ头像", e.Message, e.StackTrace);
+            Debug.WriteLine("设置QQ头像失败:" + e.Message);
         }
     }
     #endregion
@@ -189,7 +190,7 @@ public class Send
                 return true;
             return false;
         } catch (Exception e) {
-            InstanceLog.Erro("设置在线状态", e.Message, e.StackTrace);
+            Debug.WriteLine("设置在线状态失败:" + e.Message);
             return false;
         }
     }
@@ -201,7 +202,7 @@ public class Send
         try {
             await MsgHandle.SendMsg.PostSend(HttpClient, SetOnlineStatusAPI, new set_online_status(type).JsonText);
         } catch (Exception e) {
-            InstanceLog.Erro("设置在线状态", e.Message, e.StackTrace);
+            Debug.WriteLine("设置在线状态失败:" + e.Message);
         }
     }
     #endregion
@@ -222,7 +223,7 @@ public class Send
                 return true;
             return false;
         } catch (Exception e) {
-            InstanceLog.Erro("处理好友请求", e.Message, e.StackTrace);
+            Debug.WriteLine("处理好友请求失败:" + e.Message);
             return false;
         }
     }
@@ -237,7 +238,7 @@ public class Send
         try {
             await MsgHandle.SendMsg.PostSend(HttpClient, SetFriendAddRequestAPI, new set_friend_add_request(flag, approve, remark).JsonText);
         } catch (Exception e) {
-            InstanceLog.Erro("处理好友请求", e.Message, e.StackTrace);
+            Debug.WriteLine("处理好友请求失败:" + e.Message);
         }
     }
     #endregion
@@ -255,7 +256,7 @@ public class Send
                 return true;
             return false;
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("点赞失败:" + e.Message);
             return false;
         }
     }
@@ -268,7 +269,7 @@ public class Send
             //await SendMesg.Send(SendLikeAPI, new send_like(user_id, num).JsonText);
             await SendLikeAsync(user_id, num);
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("点赞失败:" + e.Message);
         }
     }
 
@@ -306,7 +307,7 @@ public class Send
                 return null;
             return JsonSerializer.Deserialize<get_stranger_infoReturn>(await httpc.Content.ReadAsStringAsync());
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("获取点赞列表失败：" + e.Message);
             return null;
         }
     }
@@ -325,7 +326,7 @@ public class Send
                 return null;
             return JsonSerializer.Deserialize<get_profile_like>(await httpc.Content.ReadAsStringAsync());
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("获取点赞列表失败：" + e.Message);
             return null;
         }
     }
@@ -344,7 +345,7 @@ public class Send
                 return null;
             return JsonSerializer.Deserialize<get_friends_with_category>(await httpc.Content.ReadAsStringAsync());
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("获取好友信息分组失败：" + e.Message);
             return null;
         }
     }
@@ -363,7 +364,7 @@ public class Send
                 return null;
             return JsonSerializer.Deserialize<get_friend_listReturn>(await httpc.Content.ReadAsStringAsync());
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("获取好友列表失败：" + e.Message);
             return null;
         }
     }
@@ -381,7 +382,7 @@ public class Send
             var requestJson = new ArkShareGroup(group_id).ToString();
             httpc = await MsgHandle.SendMsg.PostSend(HttpClient, ArkShareGroupAPI, requestJson, null);
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("获取群卡片失败：" + e.Message);
             return null;
         }
         if ((int)httpc.StatusCode != 200) return null;
@@ -400,7 +401,7 @@ public class Send
         try {
             httpc = await MsgHandle.SendMsg.PostSend(HttpClient, ArkSharePeerAPI, new ArkSharePeer(id, type).ToString(), null);
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("获取群卡片失败：" + e.Message);
             return null;
         }
         if ((int)httpc.StatusCode != 200) return null;
@@ -420,7 +421,7 @@ public class Send
         try {
             _ = await MsgHandle.SendMsg.PostSend(HttpClient, CreateCollectionAPI, new create_collection(bried, rowdata).JsonText);
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("创建收藏内容失败：" + e.Message);
         }
     }
 
@@ -438,7 +439,7 @@ public class Send
                 return false;
             return true;
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("创建收藏内容失败：" + e.Message);
             return false;
         }
     }
@@ -457,7 +458,7 @@ public class Send
         try {
             _ = await MsgHandle.SendMsg.PostSend(HttpClient, DeleteFriendAPI, new delete_friend(user_id, tempBlock, tempBothDel).JsonText);
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("删除好友失败：" + e.Message);
         }
     }
 
@@ -476,7 +477,7 @@ public class Send
                 return false;
             return true;
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("删除好友失败：" + e.Message);
             return false;
         }
     }
@@ -560,7 +561,7 @@ public class Send
         try {
             await MsgHandle.SendMsg.PostSend(HttpClient, POSTURI, RequtContent);
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("发送合并消息失败：" + e.Message);
         }
     }
 

@@ -1,4 +1,3 @@
-using Mirai.Net.Utils.Scaffolds;
 using PKHeX.Core;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
@@ -22,7 +21,6 @@ public class MiraiQQTrade<T> : AbstractTrade<T> where T : PKM, new()
 
     public override void SendMessage(string message)
     {
-        MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(userInfo.ID.ToString()).Plain(message).Build(), GroupId);
-
+        //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(userInfo.ID.ToString()).Plain(message).Build(), GroupId);
     }
 }

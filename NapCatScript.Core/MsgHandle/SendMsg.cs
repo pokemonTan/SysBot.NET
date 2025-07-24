@@ -1,4 +1,5 @@
-﻿using System.Net;
+using System.Diagnostics;
+using System.Net;
 using System.Net.Http;
 
 namespace NapCatScript.Core.MsgHandle;
@@ -28,7 +29,7 @@ public static class SendMsg
             }
             return await hrm.Content.ReadAsStringAsync(ctoken);
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message + "\r\n" + e.StackTrace);
+            Debug.WriteLine("发送消息失败：" + e.Message);
             return "Erro";
         }
         

@@ -1,5 +1,7 @@
 using PKHeX.Core;
 using SysBot.Base;
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,9 +67,7 @@ public abstract class PokeBotRunner<T>(PokeTradeHub<T> hub, BotFactory<T> Factor
     {
         if (RunOnce)
             return;
-
         AutoLegalityWrapper.EnsureInitialized(Hub.Config.Legality);
-
         AddIntegrations();
         AddTradeBotMonitors();
 

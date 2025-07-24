@@ -1,4 +1,5 @@
-﻿using SQLite;
+using SQLite;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using Key = System.Reflection.PropertyInfo;
 
@@ -65,7 +66,7 @@ public class SQLiteService
         try {
             oldData = await Get<T?>(keyValue!.ToString());
         } catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine($"{e.Message}");
             return;
         }
 
@@ -98,7 +99,7 @@ public class SQLiteService
             try {
                 await Delete<T>(propty.GetValue(obj));
             } catch (Exception e) {
-                InstanceLog.Erro(e.Message, e.StackTrace);
+                Debug.WriteLine($"{e.Message}");
             }
         }
     }
@@ -133,7 +134,7 @@ public class SQLiteService
                 await Update(obj);
             }
         } catch (Exception ex) {
-            InstanceLog.Erro(ex.Message, ex.StackTrace);
+            Debug.WriteLine($"{ex.Message}");
         }
 
         //try {

@@ -1,4 +1,4 @@
-﻿namespace NapCatScript.Core.Services;
+namespace NapCatScript.Core.Services;
 
 public class Log
 {
@@ -41,18 +41,6 @@ public class Log
         Writer.Flush();
     }
 
-    public void Erro(params object?[] content)
-    {
-        foreach (var obj in content) {
-            if (obj is null)
-                continue;
-            Writer.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + " Erro :" + obj.ToString());
-            var tempColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(obj.ToString());
-            Console.ForegroundColor = tempColor;
-        }
-        Writer.Flush();
-    }
+    
 
 }

@@ -1,8 +1,9 @@
-﻿using NapCatScript.Core.Model;
+using NapCatScript.Core.Model;
 using System.Net.Http.Headers;
 using NapCatScript.Core.NetWork.NetWorkModel;
 using NapCatScript.Core.Services;
 using HttpClient = System.Net.Http.HttpClient;
+using System.Diagnostics;
 
 namespace NapCatScript.Core.MsgHandle;
 /// <summary>
@@ -35,7 +36,7 @@ public static class Utils
             return await result.Content.ReadAsStringAsync();
         }
         catch (Exception e) {
-            InstanceLog.Erro(e.Message, e.StackTrace);
+            Debug.WriteLine("获取网络配置失败：" + e.Message);
             return null;
         }
     }
@@ -68,7 +69,9 @@ public static class Utils
     {
         if (mesg.GroupId.ToString() != string.Empty &&
             mesg.GroupId != default)
+        {
             return mesg.GroupId.ToString();
+        }
         return mesg.UserId.ToString();
     }
 

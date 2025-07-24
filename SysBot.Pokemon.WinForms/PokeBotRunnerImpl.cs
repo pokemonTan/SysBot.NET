@@ -8,6 +8,7 @@ using SysBot.Pokemon.YouTube;
 using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SysBot.Pokemon;
 
@@ -25,6 +26,7 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
 
     protected override void AddIntegrations()
     {
+        Debug.WriteLine("开始集成");
         AddDiscordBot(Hub.Config.Discord.Token);
         AddTwitchBot(Hub.Config.Twitch);
         AddYouTubeBot(Hub.Config.YouTube);

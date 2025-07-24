@@ -1,36 +1,30 @@
-using Mirai.Net.Data.Messages;
-using Mirai.Net.Data.Messages.Concretes;
-using Mirai.Net.Data.Messages.Receivers;
-using Mirai.Net.Modules;
-using Mirai.Net.Sessions.Http.Managers;
-using Mirai.Net.Utils.Scaffolds;
 using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.QQ;
 
-public class RemoteControlModule<T> : IModule where T : PKM, new()
+public class RemoteControlModule<T> where T : PKM, new()
 {
     private string receiverQQ = "964954800";
     private string receiverGroup = "612566288";
     public bool? IsEnable { get; set; } = true;
 
-    public async void Execute(MessageReceiverBase @base)
+    public async void Execute()
     {
-        var receiver = @base.Concretize<GroupMessageReceiver>();
         QQSettings settings = MiraiQQBot<T>.Settings;
 
-        var text = receiver.MessageChain.OfType<PlainMessage>()?.FirstOrDefault()?.Text ?? "";
-        if (string.IsNullOrWhiteSpace(text)) return;
-        var qq = receiver.Sender.Id;
-        var nickName = receiver.Sender.Name;
-        receiverGroup = receiver.GroupId;
+        //var text = receiver.MessageChain.OfType<PlainMessage>()?.FirstOrDefault()?.Text ?? "";
+        //if (string.IsNullOrWhiteSpace(text)) return;
+        //var qq = receiver.Sender.Id;
+        //var nickName = receiver.Sender.Name;
+        //receiverGroup = receiver.GroupId;
+        string text = "";
+        string qq = "";
         if(qq != receiverQQ) { return; }
         if(text == "截图")
         {
@@ -112,7 +106,7 @@ public class RemoteControlModule<T> : IModule where T : PKM, new()
         var bot = MiraiQQBot<T>.Runner.Bots.Find(z => IsRemoteControlBot(z.Bot));
         if (bot == null)
         {
-            await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人可用于执行命令:[截图]").Build());
+            //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人可用于执行命令:[截图]").Build());
             return;
         }
 
@@ -124,7 +118,7 @@ public class RemoteControlModule<T> : IModule where T : PKM, new()
         var bot = MiraiQQBot<T>.Runner.Bots.Find(z => IsRemoteControlBot(z.Bot));
         if (bot == null)
         {
-            await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人可用于执行命令:[{b}]").Build());
+            //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人可用于执行命令:[{b}]").Build());
             return;
         }
 
@@ -136,7 +130,7 @@ public class RemoteControlModule<T> : IModule where T : PKM, new()
         var bot = MiraiQQBot<T>.Runner.GetBot(ip);
         if (bot == null)
         {
-            await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人可用于执行命令:[{b}]").Build());
+            //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人可用于执行命令:[{b}]").Build());
             return;
         }
 
@@ -148,7 +142,7 @@ public class RemoteControlModule<T> : IModule where T : PKM, new()
         var bot = MiraiQQBot<T>.Runner.Bots.Find(z => IsRemoteControlBot(z.Bot));
         if (bot == null)
         {
-            await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人可用于执行命令:[{s}]").Build());
+            //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人可用于执行命令:[{s}]").Build());
             return;
         }
 
@@ -160,7 +154,7 @@ public class RemoteControlModule<T> : IModule where T : PKM, new()
         var bot = MiraiQQBot<T>.Runner.GetBot(ip);
         if (bot == null)
         {
-            await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人属于IP地址:[{ip}]").Build());
+            //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人属于IP地址:[{ip}]").Build());
             return;
         }
 
@@ -182,14 +176,14 @@ public class RemoteControlModule<T> : IModule where T : PKM, new()
         var bot = GetBot(ip);
         if (bot == null)
         {
-            await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人属于IP地址:[{ip}]").Build());
+            //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"没有机器人属于IP地址:[{ip}]").Build());
             return;
         }
 
         var b = bot.Bot;
         var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
         await b.Connection.SendAsync(SwitchCommand.SetScreen(on ? ScreenState.On : ScreenState.Off, crlf), CancellationToken.None).ConfigureAwait(false);
-        await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"屏幕已经:[{(on ? "打开" : "关闭")}]").Build());
+        //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"屏幕已经:[{(on ? "打开" : "关闭")}]").Build());
         return;
     }
 
@@ -203,7 +197,7 @@ public class RemoteControlModule<T> : IModule where T : PKM, new()
     {
         if (!Enum.IsDefined(typeof(SwitchButton), button))
         {
-            await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"未知的按键:[{button}]").Build());
+            //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"未知的按键:[{button}]").Build());
             return;
         }
 
@@ -228,7 +222,7 @@ public class RemoteControlModule<T> : IModule where T : PKM, new()
             byte[] screenData = await SwitchConnection.CaptureCurrentScreen(CancellationToken.None).ConfigureAwait(false);
             // 将字节数组转换为Base64字符串
             string base64String = Convert.ToBase64String(screenData);
-            await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().ImageFromBase64(base64String).Build());
+            //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().ImageFromBase64(base64String).Build());
         }
         catch (Exception ex)
         {
@@ -241,17 +235,17 @@ public class RemoteControlModule<T> : IModule where T : PKM, new()
     {
         if (!Enum.IsDefined(typeof(SwitchStick), s))
         {
-            await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"未知的摇杆:[{s}]").Build());
+            //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"未知的摇杆:[{s}]").Build());
             return;
         }
 
         var b = bot.Bot;
         var crlf = b is SwitchRoutineExecutor<PokeBotState> { UseCRLF: true };
         await b.Connection.SendAsync(SwitchCommand.SetStick(s, x, y, crlf), CancellationToken.None).ConfigureAwait(false);
-        await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"[{b.Connection.Name}]已经执行:[{s}]").Build());
+        //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"[{b.Connection.Name}]已经执行:[{s}]").Build());
         await Task.Delay(ms).ConfigureAwait(false);
         await b.Connection.SendAsync(SwitchCommand.ResetStick(s, crlf), CancellationToken.None).ConfigureAwait(false);
-        await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"[{b.Connection.Name}]已经重置回摇杆的位置").Build());
+        //await MessageManager.SendGroupOrTempMessageAsync(receiverQQ, receiverGroup, new MessageChainBuilder().Plain($"[{b.Connection.Name}]已经重置回摇杆的位置").Build());
     }
 
     private static bool IsRemoteControlBot(RoutineExecutor<PokeBotState> botstate)

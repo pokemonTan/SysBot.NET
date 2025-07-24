@@ -1,4 +1,6 @@
-﻿namespace NapCatScript.Core.JsonFormat;
+using System.Diagnostics;
+
+namespace NapCatScript.Core.JsonFormat;
 
 public static class Utils
 {
@@ -30,6 +32,7 @@ public static class Utils
                 return true;
             }
         } catch (Exception e) {
+            Debug.WriteLine(e.Message);
             return false;
         }
         return false;

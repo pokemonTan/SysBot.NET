@@ -98,7 +98,14 @@ public class MiraiQQBot<T> where T : PKM, new()
                     {
                         lock (_msgListLock)
                             NoPMesgList.Add(mesg);
-                        Debug.WriteLine($"{mesg.UserId}({mesg.UserName}): {mesg.MessageContent}");
+                        if(mesg.MessageType == "group" && InArray(mesg.GroupId, Settings.GroupIdList.Split(",")))
+                        {
+                            if (!string.IsNullOrEmpty(mesg.MessageContent))
+                            {
+                                Debug.WriteLine($"{mesg.GroupId}-{mesg.UserId}({mesg.SenderMemberName}): {mesg.MessageContent}");
+
+                            }
+                        }
                     }
                 }
                 catch (Exception e)

@@ -1,3 +1,4 @@
+using NapCatScript.Core.Model;
 using PKHeX.Core;
 using SysBot.Base;
 using System;
@@ -58,9 +59,8 @@ public class PsModule<T>  where T : PKM, new()
 {
     public bool? IsEnable { get; set; } = true;
 
-    public void Execute()
+    public  void Execute(MsgInfo mesg)
     {
-        //var receiver = @base.Concretize<GroupMessageReceiver>();
         //QQSettings settings = MiraiQQBot<T>.Settings;
 
         //if (receiver.MessageChain.OfType<AtMessage>().All(x => x.Target != Convert.ToString((long)settings.QQ))) return;
@@ -71,7 +71,7 @@ public class PsModule<T>  where T : PKM, new()
         //var nickName = receiver.Sender.Name;
         //var groupId = receiver.GroupId;
         //LogUtil.LogInfo($"接受到消息：[{text}]", "测试");
-        // 中英文判断
+        //中英文判断
         //if (IsChinesePS(text))
         //{
         //    ProcessChinesePS(text, qq, nickName, groupId);

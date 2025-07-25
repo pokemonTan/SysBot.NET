@@ -90,9 +90,29 @@ public static class ReceiveMsg
             return null;
 
         string? user_name = "";
+        string? member_nickname = "";
+        string? role = "";
+        string? bot_qq = "";
+        if(json.TryGetProperty("self_id", out JsonElement botQQValue))
+        {
+            bot_qq = botQQValue.GetString();
+        }
         if (json.TryGetProperty("sender", out JsonElement sender)) {
             if (sender.TryGetProperty("nickname", out JsonElement value))
+            {
                 user_name = value.GetString();
+            }
+            if (message_type.GetString() == "group")
+            {
+                if(sender.TryGetProperty("card", out JsonElement memberNameValue))
+                {
+                    member_nickname = memberNameValue.GetString();
+                }
+                if (sender.TryGetProperty("role", out JsonElement roleValue))
+                {
+                    role = roleValue.GetString();
+                }
+            }
         }
 
         JsonElement time;
@@ -109,13 +129,16 @@ public static class ReceiveMsg
         
         return new MsgInfo()
         {
+            BotQQ = bot_qq ?? "",
             MessageContent = message.GetString()!, 
             MessageType = message_type.GetString()!, 
             UserId = user_id.GetUInt64().ToString(), 
             GroupId = group_id_bool ? group_id.GetInt64().ToString() : /*default*/string.Empty, 
             UserName = user_name ?? "",
+            SenderMemberName = member_nickname ?? "",
             Time = d1,
-            MessageId = msgid
+            MessageId = msgid,
+            Role = role ?? "",
         };
     }
 

@@ -1,4 +1,4 @@
-﻿namespace NapCatScript.Core.Model;
+namespace NapCatScript.Core.Model;
 /// <summary>
 /// 数据信息 仅适用于接收消息 产生于 <see cref="MsgHandle.ReceiveMsg"/>
 /// </summary>
@@ -12,6 +12,12 @@ public class MsgInfo
     /// </summary>
     [SQLite.Column("user_id")]
     public string UserId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 机器人QQ
+    /// </summary>
+    [SQLite.Column("bot_qq")]
+    public string BotQQ { get; set; } = string.Empty;
 
     /// <summary>
     /// 群组ID
@@ -30,6 +36,24 @@ public class MsgInfo
     /// </summary>
     [SQLite.Column("message_content")]
     public string MessageContent { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 群员权限
+    /// </summary>
+    [SQLite.Column("role")]
+    public string Role { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 群员昵称
+    /// </summary>
+    [SQLite.Column("card")]
+    public string SenderMemberName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// QQ昵称
+    /// </summary>
+    [SQLite.Column("nickname")]
+    public string SenderNickName { get; set; } = string.Empty;
 
     /// <summary>
     /// 消息类型

@@ -17,6 +17,7 @@ using NapCatScript.Core.Model;
 using NapCatScript.Core.MsgHandle;
 using NapCatScript.Core;
 using System.Data;
+using Microsoft.VisualBasic;
 
 namespace SysBot.Pokemon.QQ;
 
@@ -287,8 +288,11 @@ public class MiraiQQBot<T> where T : PKM, new()
         Cts.Dispose();
     }
 
-    public void SendGroupMessage(int groupId, string message)
+    public async static void SendGroupMessage(long botQQ, string groupId, List<MsgJson> messageChains, long source_message_id = 0)
     {
-        //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(userInfo.ID.ToString()).Plain(message).Build(), GroupId);
+        await Task.Run(() =>
+        {
+            SendObject.SendMsg(groupId, MsgTo.group, messageChains, source_message_id);
+        });
     }
 }

@@ -7,11 +7,14 @@ namespace SysBot.Pokemon.QQ;
 public class MiraiQQTrade<T> : AbstractTrade<T> where T : PKM, new()
 {
     private readonly string GroupId = default!;
-    public MiraiQQTrade(string qq, string nickName, string groupId) 
+    private readonly long BotQQ = default!;
+    private readonly long MessageId = default!;
+    public MiraiQQTrade(long botQQ, string qq, string nickName, string groupId, long message_id) 
     {
         SetPokeTradeTrainerInfo(new PokeTradeTrainerInfo(nickName, ulong.Parse(qq)));
         SetTradeQueueInfo(MiraiQQBot<T>.Info);
         GroupId = groupId;
+        MessageId = message_id;
     }
 
     public override IPokeTradeNotifier<T> GetPokeTradeNotifier(T pkm, int code)

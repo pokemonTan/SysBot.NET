@@ -80,11 +80,9 @@ public static class ReceiveMsg
     private static MsgInfo? GetMesgInfo(this JsonElement json)
     {
         bool message_type_bool = json.TryGetProperty("message_type", out JsonElement message_type);
-        JsonElement user_id = new JsonElement();
-
-        bool user_id_bool = json.TryGetProperty("user_id", out user_id);
+        bool user_id_bool = json.TryGetProperty("user_id", out JsonElement user_id);
         bool group_id_bool = json.TryGetProperty("group_id", out JsonElement group_id);
-        bool message_bool = json.TryGetProperty("raw_message", out JsonElement message);
+        bool message_bool = json.TryGetProperty("raw_message", out JsonElement raw_message);
 
         if (!user_id_bool || !message_bool || !message_type_bool)
             return null;
@@ -92,7 +90,7 @@ public static class ReceiveMsg
         string? user_name = "";
         string? member_nickname = "";
         string? role = "";
-        long? bot_qq = 0;
+        long bot_qq = 0;
         if(json.TryGetProperty("self_id", out JsonElement botQQValue))
         {
             bot_qq = botQQValue.GetInt64();
@@ -115,6 +113,19 @@ public static class ReceiveMsg
             }
         }
 
+        bool isAtRobot = false;
+        string firstPlain = "";
+        if (json.TryGetProperty("message", out JsonElement message))
+        {
+            MessageChainResult messageChainResult = new MessageChainResult();
+            messageChainResult.AnalysisMessageChain(bot_qq, message);
+            firstPlain = messageChainResult.FirstPlain;
+            if (messageChainResult.IsAtRobot)
+            {
+                isAtRobot = true;
+            }
+        }
+
         JsonElement time;
         double d1 = 0d;
         if (json.TryGetProperty("time", out time)) {
@@ -129,16 +140,19 @@ public static class ReceiveMsg
         
         return new MsgInfo()
         {
-            BotQQ = bot_qq ?? 0,
-            MessageContent = message.GetString()!, 
-            MessageType = message_type.GetString()!, 
+            BotQQ = bot_qq,
+            MessageContent = raw_message.GetString()!, 
+            MessageType = message_type.GetString()!,
             UserId = user_id.GetUInt64().ToString(), 
+            SenderId = user_id.GetUInt64().ToString(),
             GroupId = group_id_bool ? group_id.GetInt64().ToString() : /*default*/string.Empty, 
             UserName = user_name ?? "",
             SenderMemberName = member_nickname ?? "",
             Time = d1,
             MessageId = msgid,
             Role = role ?? "",
+            IsAtRobot = isAtRobot,
+            FirstPlain = firstPlain,
         };
     }
 

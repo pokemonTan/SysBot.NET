@@ -37,6 +37,13 @@ public class MsgInfo
     [SQLite.Column("message_content")]
     public string MessageContent { get; set; } = string.Empty;
 
+
+    /// <summary>
+    /// 去掉空格后的消息内容
+    /// </summary>
+    [SQLite.Column("first_plain")]
+    public string FirstPlain { get; set; } = string.Empty;
+
     /// <summary>
     /// 群员权限
     /// </summary>
@@ -66,7 +73,13 @@ public class MsgInfo
     
     [SQLite.Column("message_id")]
     public long MessageId { get; set; }
-    
+
+    /// <summary>
+    /// 是否有@机器人
+    /// </summary>
+    [SQLite.Column("is_at_robot")]
+    public bool IsAtRobot { get; set; } = false;
+
     public string GetId()
     {
         //if (UserId != string.Empty) return UserId;

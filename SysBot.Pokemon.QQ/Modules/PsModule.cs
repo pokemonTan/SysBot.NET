@@ -1,10 +1,17 @@
+using NapCatScript.Core;
+using NapCatScript.Core.JsonFormat.Msgs;
 using NapCatScript.Core.Model;
+using NapCatScript.Core.MsgHandle;
 using PKHeX.Core;
 using SysBot.Base;
 using System;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
+using NapCatScript.Core.JsonFormat;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SysBot.Pokemon.QQ;
 public class APIResponse
@@ -59,36 +66,43 @@ public class PsModule<T>  where T : PKM, new()
 {
     public bool? IsEnable { get; set; } = true;
 
+    public static Send SendObject => CoreConfigValueAndObject.SendObject;
+
     public  void Execute(MsgInfo mesg)
     {
-        //QQSettings settings = MiraiQQBot<T>.Settings;
-
-        //if (receiver.MessageChain.OfType<AtMessage>().All(x => x.Target != Convert.ToString((long)settings.QQ))) return;
-
-        //var text = receiver.MessageChain.OfType<PlainMessage>()?.FirstOrDefault()?.Text ?? "";
-        //if (string.IsNullOrWhiteSpace(text)) return;
-        //var qq = receiver.Sender.Id;
-        //var nickName = receiver.Sender.Name;
-        //var groupId = receiver.GroupId;
-        //LogUtil.LogInfo($"接受到消息：[{text}]", "测试");
+        if (!mesg.IsAtRobot || (mesg.MessageType != "group")) return;
+        var text = mesg.FirstPlain;
+        if (string.IsNullOrWhiteSpace(text)) return;
+        var qq = mesg.SenderId;
+        var nickName = mesg.SenderMemberName;
+        var groupId = mesg.GroupId;
+        long botQQ = mesg.BotQQ;    
+        long sourceMessageId = mesg.MessageId;
+        LogUtil.LogInfo($"接受到消息：[{text}]", "测试");
         //中英文判断
-        //if (IsChinesePS(text))
-        //{
-        //    ProcessChinesePS(text, qq, nickName, groupId);
-        //}
-        //else if (IsPS(text))
-        //    ProcessPS(text, qq, nickName, groupId);
+        if (IsChinesePS(text))
+        {
+            ProcessChinesePS(botQQ, text, qq, nickName, groupId, sourceMessageId);
+        }
+        else if (IsPS(text))
+        {
+            ProcessPS(botQQ, text, qq, nickName, groupId, sourceMessageId);
+        }
     }
 
-    //private void ProcessPS(string text, string qq, string nickName, string groupId)
-    //{
-    //    LogUtil.LogInfo($"收到ps代码:\n{text}", nameof(PsModule<T>));
-    //    var pss = text.Split("\n\n");
-    //    if (pss.Length > 1)
-    //        new MiraiQQTrade<T>(qq, nickName, groupId).StartTradeMultiPs(text);
-    //    else
-    //        new MiraiQQTrade<T>(qq, nickName, groupId).StartTradePs(text);
-    //}
+    private void ProcessPS(long botQQ, string text, string qq, string nickName, string groupId, long message_id)
+    { 
+        LogUtil.LogInfo($"收到ps代码:\n{text}", nameof(PsModule<T>));
+        var pss = text.Split("\n\n");
+        if (pss.Length > 1)
+        {
+            new MiraiQQTrade<T>(botQQ, qq, nickName, groupId, message_id).StartTradeMultiPs(text);
+        }
+        else
+        {
+            new MiraiQQTrade<T>(botQQ, qq, nickName, groupId, message_id).StartTradePs(text);
+        }
+    }
 
     private void UpdateOrAddGameTradeOTInfo<TGameOTInfo>(string qq, TGameOTInfo gameOTInfo) where TGameOTInfo : GameOTInfo 
     {
@@ -110,58 +124,61 @@ public class PsModule<T>  where T : PKM, new()
             Common.GameOTInfoList.Add(qq, tradeInfo);
         }
     }
-    private async void ProcessChinesePS(string text, string qq, string nickName, string groupId)
+    private async void ProcessChinesePS(long botQQ, string text, string qq, string nickName, string groupId, long message_id = 0)
     {
-        LogUtil.LogInfo($"收到中文ps代码:\n{text}", nameof(PsModule<T>));
-        //var pss = text.Split("+");
-        //if (pss.Length > 1)
-        //{
-        //    new MiraiQQTrade<T>(qq, nickName, groupId).StartTradeMultiChinesePs(text);
-        //}
-        //else
-        //{
-        string jsonText = CheckPokemonGroupGold(qq, groupId);
-        LogUtil.LogInfo(jsonText, "测试");
-        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var response = JsonSerializer.Deserialize<APIResponse>(jsonText, options);
-        if (response != null)
+        await Task.Run(() =>
         {
-            int repsonse_code = (int)response.Code;
-            string? repsonse_msg = response.Msg;
-            if (repsonse_code == 200)
+            LogUtil.LogInfo($"收到中文ps代码:\n{text}", nameof(PsModule<T>));
+            //var pss = text.Split("+");
+            //if (pss.Length > 1)
+            //{
+            //    new MiraiQQTrade<T>(qq, nickName, groupId).StartTradeMultiChinesePs(text);
+            //}
+            //else
+            //{
+            string jsonText = CheckPokemonGroupGold(qq, groupId);
+            LogUtil.LogInfo(jsonText, "测试");
+            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var response = JsonSerializer.Deserialize<APIResponse>(jsonText, options);
+            if (response != null)
             {
-                
-                LogUtil.LogInfo($"{qq}-{repsonse_msg}", "测试");
-                if(response.Data != null)
+                int repsonse_code = (int)response.Code;
+                string? repsonse_msg = response.Msg;
+                if (repsonse_code == 200)
                 {
-                    PokemonData response_data = response.Data;
-                    if (typeof(T) == typeof(PK8) && response_data.Swsh != null)
+
+                    LogUtil.LogInfo($"{qq}-{repsonse_msg}", "测试");
+                    if (response.Data != null)
                     {
-                        UpdateOrAddGameTradeOTInfo(qq, response_data.Swsh);
+                        PokemonData response_data = response.Data;
+                        if (typeof(T) == typeof(PK8) && response_data.Swsh != null)
+                        {
+                            UpdateOrAddGameTradeOTInfo(qq, response_data.Swsh);
+                        }
+                        if (typeof(T) == typeof(PB8) && response_data.Bdsp != null)
+                        {
+                            UpdateOrAddGameTradeOTInfo(qq, response_data.Bdsp);
+                        }
+                        if (typeof(T) == typeof(PA8) && response_data.Pla != null)
+                        {
+                            UpdateOrAddGameTradeOTInfo(qq, response_data.Pla);
+                        }
+                        if (typeof(T) == typeof(PK9) && response_data.Sv != null)
+                        {
+                            UpdateOrAddGameTradeOTInfo(qq, response_data.Sv);
+                        }
                     }
-                    if (typeof(T) == typeof(PB8) && response_data.Bdsp != null)
-                    {
-                        UpdateOrAddGameTradeOTInfo(qq, response_data.Bdsp);
-                    }
-                    if (typeof(T) == typeof(PA8) && response_data.Pla != null)
-                    {
-                        UpdateOrAddGameTradeOTInfo(qq, response_data.Pla);
-                    }
-                    if (typeof(T) == typeof(PK9) && response_data.Sv != null)
-                    {
-                        UpdateOrAddGameTradeOTInfo(qq, response_data.Sv);
-                    }
+
+                    new MiraiQQTrade<T>(botQQ, qq, nickName, groupId, message_id).StartTradeChinesePs(text);
                 }
-                
-                new MiraiQQTrade<T>(qq, nickName, groupId).StartTradeChinesePs(text);
+                else
+                {
+                    MiraiQQBot<T>.SendGroupMessage(botQQ, groupId, new List<MsgJson> { new TextJson($"\n{repsonse_msg}") }, message_id);
+                    LogUtil.LogInfo($"{qq}-{repsonse_msg}", "测试");
+                }
+
             }
-            else
-            {
-                //await MessageManager.SendGroupOrTempMessageAsync(qq, groupId, repsonse_msg);
-                LogUtil.LogInfo($"{qq}-{repsonse_msg}", "测试");
-            }
-            
-        }
+        });
     }
 
     /// <summary>
@@ -188,16 +205,16 @@ public class PsModule<T>  where T : PKM, new()
         return false;
     }
 
-    //private static bool IsPS(string str)
-    //{
-    //    var gameStrings = ShowdownTranslator<T>.GameStringsEn;
-    //    for (int i = 1; i < gameStrings.Species.Count; i++)
-    //    {
-    //        if (str.Contains(gameStrings.Species[i]))
-    //        {
-    //            return true;
-    //        }
-    //    }
-    //    return false;
-    //}
+    private static bool IsPS(string str)
+    {
+        var gameStrings = ShowdownTranslator<T>.GameStringsEn;
+        for (int i = 1; i < gameStrings.Species.Count; i++)
+        {
+            if (str.Contains(gameStrings.Species[i]))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

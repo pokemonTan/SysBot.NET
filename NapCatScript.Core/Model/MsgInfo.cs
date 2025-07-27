@@ -14,6 +14,12 @@ public class MsgInfo
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
+    /// 发送方用户ID，与user_id一致
+    /// </summary>
+    [SQLite.Column("sender_id")]
+    public string SenderId { get; set; } = string.Empty;
+
+    /// <summary>
     /// 机器人QQ
     /// </summary>
     [SQLite.Column("bot_qq")]

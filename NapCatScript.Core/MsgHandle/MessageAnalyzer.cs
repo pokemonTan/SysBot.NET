@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,8 +31,9 @@ namespace NapCatScript.Core.MsgHandle
                     && element.TryGetProperty("data", out JsonElement dataElem)
                     && dataElem.TryGetProperty("qq", out JsonElement qqElem))
                 {
-                    long qq = qqElem.GetInt64();
-                    if (qq == BotQQ) // 假设RealRobotList是存储机器人QQ的列表
+                    string qq = qqElem.GetString();
+                    
+                    if (qq == BotQQ.ToString()) // 假设RealRobotList是存储机器人QQ的列表
                     {
                         IsAtRobot = true;
                         continue; // 跳过添加到临时列表，相当于unset

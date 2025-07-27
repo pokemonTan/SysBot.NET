@@ -66,8 +66,6 @@ public class PsModule<T>  where T : PKM, new()
 {
     public bool? IsEnable { get; set; } = true;
 
-    public static Send SendObject => CoreConfigValueAndObject.SendObject;
-
     public  void Execute(MsgInfo mesg)
     {
         if (!mesg.IsAtRobot || (mesg.MessageType != "group")) return;
@@ -124,6 +122,7 @@ public class PsModule<T>  where T : PKM, new()
             Common.GameOTInfoList.Add(qq, tradeInfo);
         }
     }
+
     private async void ProcessChinesePS(long botQQ, string text, string qq, string nickName, string groupId, long message_id = 0)
     {
         await Task.Run(() =>

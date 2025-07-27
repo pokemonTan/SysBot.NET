@@ -82,6 +82,16 @@ public class MiraiQQBot<T> where T : PKM, new()
         return Array.IndexOf(strArray, str) != -1;
     }
 
+    /// <summary>
+    /// 判断发送方是否为机器人或者不在本群
+    /// </summary>
+    /// <param name="mesg"></param>
+    /// <returns></returns>
+    private bool IsBotOrNotTargetGroup(MsgInfo mesg)
+    {
+        return !InArray(mesg.GroupId, Settings.GroupIdList.Split(",")) || mesg.SenderId == Settings.QQ.ToString();
+    }
+
     // 修正 ReceiveAsync 方法中的消息接收逻辑
     private static async Task ReceiveAsync()
     {
@@ -104,8 +114,7 @@ public class MiraiQQBot<T> where T : PKM, new()
                         {
                             if (!string.IsNullOrEmpty(mesg.MessageContent))
                             {
-                                InterfaceTest(SendObject, mesg.MessageId);
-                                ImageTest(SendObject, mesg.MessageId);
+                                new PsModule<T>().Execute(mesg);
                                 Debug.WriteLine($"机器人：{mesg.BotQQ}-QQ群：{mesg.GroupId}-用户：{mesg.UserId}({mesg.SenderMemberName}): {mesg.MessageContent}");
                             }
                         }

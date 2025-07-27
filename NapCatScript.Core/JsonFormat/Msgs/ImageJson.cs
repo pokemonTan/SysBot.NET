@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NapCatScript.Core.JsonFormat.Msgs;
 
@@ -34,7 +35,7 @@ public class ImageJson : MsgJson
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public static ImageJson Create(string filePath) => new ImageJson(ImageToBase64(filePath));
+    public static ImageJson Create(string filePath) => new ImageJson(ToBase64(filePath));
     
     public static string ToBase64(string filePath)
     {

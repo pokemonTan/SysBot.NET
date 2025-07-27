@@ -64,7 +64,6 @@ public abstract class QQBotRunner<T> : BotRunner<QQBotState>, IQQBotRunner where
     public override void StartAll()
     {
 
-        Console.WriteLine("测试");
         InitializeStart();
 
         if (!Hub.Config.SkipConsoleBotCreation)

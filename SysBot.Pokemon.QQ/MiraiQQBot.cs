@@ -45,6 +45,7 @@ public class MiraiQQBot<T> where T : PKM, new()
     private readonly TaskCompletionSource<bool> _reset = new TaskCompletionSource<bool>();
     private static readonly object _msgListLock = new object();
 
+
     public MiraiQQBot(QQSettings settings, PokeTradeHub<T> hub, PokeBotRunner<T> runner)
     {
         Runner = runner;
@@ -102,8 +103,9 @@ public class MiraiQQBot<T> where T : PKM, new()
                         {
                             if (!string.IsNullOrEmpty(mesg.MessageContent))
                             {
-                                Debug.WriteLine($"{mesg.GroupId}-{mesg.UserId}({mesg.SenderMemberName}): {mesg.MessageContent}");
-
+                                InterfaceTest(SendObject, mesg.MessageId);
+                                ImageTest(SendObject, mesg.MessageId);
+                                Debug.WriteLine($"机器人：{mesg.BotQQ}-QQ群：{mesg.GroupId}-用户：{mesg.UserId}({mesg.SenderMemberName}): {mesg.MessageContent}");
                             }
                         }
                     }
@@ -250,14 +252,25 @@ public class MiraiQQBot<T> where T : PKM, new()
         LifeTime = time;
     }
 
-    private static void InterfaceTest(Send send)
+    private static void InterfaceTest(Send send, long message_id)
     {
         var contents = new List<MsgJson>
         {
-            new AtJson("qqid"),
-            new TextJson("sendMsgText"),
+            new AtJson("964954800"),
+            new TextJson("\n你好你好 "),
         };
-        send.SendMsg("qqid", MsgTo.user, contents);
+        send.SendMsg("612566288", MsgTo.group, contents, message_id);
+    }
+
+    private static void ImageTest(Send send, long message_id)
+    {
+        var contents = new List<MsgJson>
+        {
+            new AtJson("964954800"),
+            new TextJson("\n你好你好 "),
+            ImageJson.Create("D:\\SwitchScreen\\5E8F6688654177531960C0A7B6C596B6.png"),
+        };
+        send.SendMsg("612566288", MsgTo.group, contents, message_id);
     }
 
     public static void AddString(StringBuilder sbuilder, params IEnumerable<string>[] ies)
@@ -272,5 +285,10 @@ public class MiraiQQBot<T> where T : PKM, new()
         _reset.TrySetResult(true);
         Socket.Dispose();
         Cts.Dispose();
+    }
+
+    public void SendGroupMessage(int groupId, string message)
+    {
+        //MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At(userInfo.ID.ToString()).Plain(message).Build(), GroupId);
     }
 }

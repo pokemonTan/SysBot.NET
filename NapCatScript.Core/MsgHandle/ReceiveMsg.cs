@@ -92,10 +92,10 @@ public static class ReceiveMsg
         string? user_name = "";
         string? member_nickname = "";
         string? role = "";
-        string? bot_qq = "";
+        long? bot_qq = 0;
         if(json.TryGetProperty("self_id", out JsonElement botQQValue))
         {
-            bot_qq = botQQValue.GetString();
+            bot_qq = botQQValue.GetInt64();
         }
         if (json.TryGetProperty("sender", out JsonElement sender)) {
             if (sender.TryGetProperty("nickname", out JsonElement value))
@@ -129,7 +129,7 @@ public static class ReceiveMsg
         
         return new MsgInfo()
         {
-            BotQQ = bot_qq ?? "",
+            BotQQ = bot_qq ?? 0,
             MessageContent = message.GetString()!, 
             MessageType = message_type.GetString()!, 
             UserId = user_id.GetUInt64().ToString(), 

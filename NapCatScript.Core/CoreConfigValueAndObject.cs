@@ -1,4 +1,4 @@
-﻿using NapCatScript.Core.MsgHandle;
+using NapCatScript.Core.MsgHandle;
 using NapCatScript.Core.Services;
 using NapCatScript.Start;
 using static NapCatScript.Core.Services.Config;
@@ -24,6 +24,7 @@ public static class CoreConfigValueAndObject
         InstanceLog.Info("加载核心配置!");
         string? useUri = "ws://39.108.178.212:3001/?access_token=G5.Zk.IqX.";
         string? httpUri = "http://39.108.178.212:3000/";
+        string? httpAccessToken = "p2?4UpMx9r";
         BotId = "3861914692";
         if (string.IsNullOrEmpty(useUri) || string.IsNullOrEmpty(httpUri)) {
             InstanceLog.Waring("配置文件已生成，请检查Uri配置");
@@ -34,7 +35,7 @@ public static class CoreConfigValueAndObject
         SocketUri ??= "1";
         HttpUri = httpUri;
         RootId = "1";
-        SendObject = new Send(HttpUri);
+        SendObject = new Send(HttpUri, httpAccessToken);
 
         PluginLoad.LoadPlugin(Plugins);
     }

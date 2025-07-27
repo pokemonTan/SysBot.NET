@@ -17,7 +17,7 @@ public class MsgInfo
     /// 机器人QQ
     /// </summary>
     [SQLite.Column("bot_qq")]
-    public string BotQQ { get; set; } = string.Empty;
+    public long BotQQ { get; set; }
 
     /// <summary>
     /// 群组ID

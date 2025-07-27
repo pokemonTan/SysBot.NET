@@ -596,8 +596,14 @@ public class Send
     /// <param name="id"> 目标id </param>
     /// <param name="type"> 私聊还是群聊 </param>
     /// <param name="contents"> 消息内容 </param>
-    public async void SendMsg(string id, MsgTo type, List<MsgJson> contents)
+    public async void SendMsg(string id, MsgTo type, List<MsgJson> contents, long quote = 0)
     {
+        if(quote > 0)
+        {
+            ReplyJson reply = new ReplyJson(quote);
+            // 插入到contents列表的起始位置（类似PHP的array_unshift）
+            contents.Insert(0, reply);
+        }
         SendJson postJson = new SendJson(id, contents, type);
         string requestUri = GetMsgSendToURI(type);
         HttpResponseMessage message = await MsgHandle.SendMsg.PostSend(HttpClient, requestUri, postJson.JsonText);

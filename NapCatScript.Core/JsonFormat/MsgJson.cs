@@ -1,4 +1,4 @@
-﻿using NapCatScript.Core.JsonFormat;
+using NapCatScript.Core.JsonFormat;
 using NapCatScript.Core.JsonFormat.Msgs;
 
 namespace NapCatScript.Core.JsonFormat;
@@ -9,7 +9,7 @@ namespace NapCatScript.Core.JsonFormat;
 /// <para>文本消息 <see cref="TextJson"/> </para>
 /// <para>表情消息 <see cref="未定义"/></para>
 /// <para>图片消息 <see cref="ImageJson"/></para>
-/// <para>回复消息 <see cref="未定义"/></para>
+/// <para>回复消息 <see cref="ReplyJson"/></para>
 /// <para>Json消息 <see cref="JsonJson"/></para>
 /// <para>视频消息 <see cref="VideoJson"/></para>
 /// <para>文件消息 <see cref="未定义"/></para>
@@ -19,6 +19,7 @@ namespace NapCatScript.Core.JsonFormat;
 /// </summary>
 [JsonDerivedType(typeof(TextJson))]
 [JsonDerivedType(typeof(ImageJson))]
+[JsonDerivedType(typeof(ReplyJson))]
 [JsonDerivedType(typeof(JsonJson))]
 [JsonDerivedType(typeof(VideoJson))]
 [JsonDerivedType(typeof(TwoForwardJson))]

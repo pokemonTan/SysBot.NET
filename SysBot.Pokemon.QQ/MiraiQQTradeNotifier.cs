@@ -18,8 +18,10 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
     private string Username { get; }
 
     private string GroupId { get; }
+    private long BotQQ { get; }
+    private long MessageId { get; }
 
-    public MiraiQQTradeNotifier(T data, PokeTradeTrainerInfo info, int code, string username, string groupId)
+    public MiraiQQTradeNotifier(T data, PokeTradeTrainerInfo info, int code, string username, string groupId, long botQQ, long messageId)
     {
         Data = data;
         Info = info;
@@ -27,6 +29,8 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         Username = username;
         GroupId = groupId;
         LogUtil.LogText($"Created trade details for {Username} - {Code}");
+        BotQQ = botQQ;
+        MessageId = messageId;
     }
 
     public Action<PokeRoutineExecutor<T>>? OnFinish { private get; set; }
@@ -287,8 +291,8 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         if (result.Species != 0 && info.Type == PokeTradeType.Dump)
         {
             var text =
-                $"species:{result.Species}\npid:{result.PID}\nec:{result.EncryptionConstant}\nIVs:{string.Join(",", result.IVs)}\nisShiny:{result.IsShiny}";
-            //MiraiQQBot<T>.SendGroupMessage(text, GroupId);
+                $"species:{result.Species}\npid:{result.PID}\nec:{result.EncryptionConstant}\nIVs:{string.Join(",", result.GetIVs())}\nisShiny:{result.IsShiny}";
+            MiraiQQBot<T>.SendGroupTextMessage(BotQQ, GroupId, text, MessageId);
         }
     }
 }

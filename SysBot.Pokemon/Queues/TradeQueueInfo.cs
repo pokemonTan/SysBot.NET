@@ -34,7 +34,8 @@ public sealed record TradeQueueInfo<T>(PokeTradeHub<T> Hub)
         if (!Hub.Config.Queues.CanQueue)
             return false;
         lock (_sync)
-            return UsersInQueue.Count < Hub.Config.Queues.MaxQueueCount && Hub.TradeBotsReady;
+            //return UsersInQueue.Count < Hub.Config.Queues.MaxQueueCount && Hub.TradeBotsReady;//测试注释
+            return UsersInQueue.Count < Hub.Config.Queues.MaxQueueCount;
     }
 
     public TradeEntry<T>? GetDetail(ulong uid)

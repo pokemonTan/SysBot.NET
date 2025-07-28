@@ -31,7 +31,7 @@ namespace NapCatScript.Core.MsgHandle
                     && element.TryGetProperty("data", out JsonElement dataElem)
                     && dataElem.TryGetProperty("qq", out JsonElement qqElem))
                 {
-                    string qq = qqElem.GetString();
+                    string qq = qqElem.GetString() ?? "";
                     
                     if (qq == BotQQ.ToString()) // 假设RealRobotList是存储机器人QQ的列表
                     {
@@ -56,7 +56,7 @@ namespace NapCatScript.Core.MsgHandle
                     // 记录第一个非空文本
                     if (string.IsNullOrEmpty(result.FirstPlain))
                     {
-                        result.FirstPlain = mergedText;
+                        FirstPlain = mergedText;
                     }
                 }
 

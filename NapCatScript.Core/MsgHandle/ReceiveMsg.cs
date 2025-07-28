@@ -125,7 +125,7 @@ public static class ReceiveMsg
                 isAtRobot = true;
             }
         }
-
+        
         JsonElement time;
         double d1 = 0d;
         if (json.TryGetProperty("time", out time)) {

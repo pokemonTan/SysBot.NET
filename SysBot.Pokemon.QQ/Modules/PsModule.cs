@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using NapCatScript.Core.JsonFormat;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SysBot.Pokemon.QQ;
 public class APIResponse
@@ -69,22 +70,23 @@ public class PsModule<T>  where T : PKM, new()
     public  void Execute(MsgInfo mesg)
     {
         if (!mesg.IsAtRobot || (mesg.MessageType != "group")) return;
-        var text = mesg.FirstPlain;
-        if (string.IsNullOrWhiteSpace(text)) return;
+        string firstPlain = mesg.FirstPlain;
+        if (string.IsNullOrWhiteSpace(firstPlain)) return;
+        
         var qq = mesg.SenderId;
         var nickName = mesg.SenderMemberName;
         var groupId = mesg.GroupId;
-        long botQQ = mesg.BotQQ;    
+        long botQQ = mesg.BotQQ;
         long sourceMessageId = mesg.MessageId;
-        LogUtil.LogInfo($"接受到消息：[{text}]", "测试");
+        LogUtil.LogInfo($"接受到消息：[{firstPlain}]", "测试");
         //中英文判断
-        if (IsChinesePS(text))
+        if (IsChinesePS(firstPlain))
         {
-            ProcessChinesePS(botQQ, text, qq, nickName, groupId, sourceMessageId);
+            ProcessChinesePS(botQQ, firstPlain, qq, nickName, groupId, sourceMessageId);
         }
-        else if (IsPS(text))
+        else if (IsPS(firstPlain))
         {
-            ProcessPS(botQQ, text, qq, nickName, groupId, sourceMessageId);
+            ProcessPS(botQQ, firstPlain, qq, nickName, groupId, sourceMessageId);
         }
     }
 
@@ -142,7 +144,7 @@ public class PsModule<T>  where T : PKM, new()
             if (response != null)
             {
                 int repsonse_code = (int)response.Code;
-                string? repsonse_msg = response.Msg;
+                string? repsonse_msg = response.Msg ?? "";
                 if (repsonse_code == 200)
                 {
 
@@ -172,7 +174,7 @@ public class PsModule<T>  where T : PKM, new()
                 }
                 else
                 {
-                    MiraiQQBot<T>.SendGroupMessage(botQQ, groupId, new List<MsgJson> { new TextJson($"\n{repsonse_msg}") }, message_id);
+                    MiraiQQBot<T>.SendGroupTextMessage(botQQ, groupId, repsonse_msg, message_id);
                     LogUtil.LogInfo($"{qq}-{repsonse_msg}", "测试");
                 }
 

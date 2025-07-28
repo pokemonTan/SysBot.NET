@@ -304,4 +304,28 @@ public class MiraiQQBot<T> where T : PKM, new()
             SendObject.SendMsg(groupId, MsgTo.group, messageChains, source_message_id);
         });
     }
+
+    public async static void SendGroupTextMessage(long botQQ, string groupId, string messageText = "", long source_message_id = 0)
+    {
+        await Task.Run(() =>
+        {
+            SendObject.SendMsg(groupId, MsgTo.group, new List<MsgJson> { new TextJson($"{messageText}") }, source_message_id);
+        });
+    }
+
+    public async static void SendGroupTextImageMessage(long botQQ, string groupId, string messageText = "", string filePath = "", long source_message_id = 0)
+    {
+        await Task.Run(() =>
+        {
+            SendObject.SendMsg(groupId, MsgTo.group, new List<MsgJson> { new TextJson($"{messageText}"), ImageJson.Create(filePath) }, source_message_id);
+        });
+    }
+
+    public async static void SendGroupTextImageBase64Message(long botQQ, string groupId, string messageText = "", string base64 = "", long source_message_id = 0)
+    {
+        await Task.Run(() =>
+        {
+            SendObject.SendMsg(groupId, MsgTo.group, new List<MsgJson> { new TextJson($"{messageText}"), new ImageJson(base64) }, source_message_id);
+        });
+    }
 }

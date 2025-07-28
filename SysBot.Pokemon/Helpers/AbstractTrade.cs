@@ -17,6 +17,11 @@ namespace SysBot.Pokemon.Helpers;
 public abstract class AbstractTrade<T> where T : PKM, new()
 {
     public abstract void SendMessage(string message);//完善此方法以实现发送消息功能
+    public abstract string GetPokemonInfo(T pkm);//完善此方法以实现发送消息功能
+
+    public abstract void SendMessageWithImage(string message, string filePath);//完善此方法以实现发送消息功能
+    public abstract void SendMessageWithImageBase64(string message, string base64);//完善此方法以实现发送消息功能
+
     public abstract IPokeTradeNotifier<T> GetPokeTradeNotifier(T pkm, int code);//完善此方法以实现消息通知功能
     protected PokeTradeTrainerInfo userInfo = default!;
     private TradeQueueInfo<T> queueInfo = default!;
@@ -276,9 +281,9 @@ public abstract class AbstractTrade<T> where T : PKM, new()
     public void StartTradeWithoutCheck(T pkm, bool foreign = false)
     {
         var code = queueInfo.GetRandomTradeCode();
-        var __ = AddToTradeQueue(pkm, code, foreign,
-            PokeRoutineType.LinkTrade, out string message);
-        SendMessage(message);
+        var __ = AddToTradeQueue(pkm, code, foreign, PokeRoutineType.LinkTrade, out string message);
+        string base64 = GetPokemonInfo(pkm);
+        SendMessageWithImageBase64(message, base64);
     }
 
     public void StartDump()
@@ -325,7 +330,7 @@ public abstract class AbstractTrade<T> where T : PKM, new()
     {
         if (!queueInfo.GetCanQueue())
         {
-            msg = " 我没电了，要充点熊熊币才能好!";
+            msg = " 我没电了，要充点熊熊币才能好。";
             return false;
         }
         return Check(pkm, out msg);
@@ -336,7 +341,7 @@ public abstract class AbstractTrade<T> where T : PKM, new()
         outPkm = new T();
         if (!queueInfo.GetCanQueue())
         {
-            msg = " 我没电了，要充点熊熊币才能好!";
+            msg = " 我没电了，要充点熊熊币才能好.";
             return false;
         }
 
@@ -374,14 +379,12 @@ public abstract class AbstractTrade<T> where T : PKM, new()
         return false;
     }
 
-    private bool AddToTradeQueue(T pk, int code, bool skipAutoOT,
-        PokeRoutineType type, out string msg)
+    private bool AddToTradeQueue(T pk, int code, bool skipAutoOT, PokeRoutineType type, out string msg)
     {
         return AddToTradeQueue(new List<T> { pk }, code, new List<bool> { skipAutoOT }, type, out msg);
     }
 
-    private bool AddToTradeQueue(List<T> pks, int code, List<bool> skipAutoOTList,
-        PokeRoutineType type, out string msg)
+    private bool AddToTradeQueue(List<T> pks, int code, List<bool> skipAutoOTList, PokeRoutineType type, out string msg)
     {
         if (pks == null || pks.Count == 0)
         {
@@ -394,8 +397,7 @@ public abstract class AbstractTrade<T> where T : PKM, new()
         var tt = type == PokeRoutineType.SeedCheck
             ? PokeTradeType.Seed
             : (type == PokeRoutineType.Dump ? PokeTradeType.Dump : PokeTradeType.Specific);
-        var detail =
-            new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, true);
+        var detail = new PokeTradeDetail<T>(pk, trainer, notifier, tt, code, true);
         detail.Context.Add("skipAutoOTList", skipAutoOTList);
         if (pks.Count > 0)
         {

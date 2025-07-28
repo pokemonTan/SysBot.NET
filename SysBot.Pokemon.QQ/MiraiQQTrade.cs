@@ -50,14 +50,16 @@ public class MiraiQQTrade<T> : AbstractTrade<T> where T : PKM, new()
     /// <returns></returns>
     public static string GetUserPokemon(string qq, string groupId, T data)
     {
-        return HttpUtils.Post("https://api.17yohui.com/api/Report/getUserPokemon", $"level={data.CurrentLevel}&pokemon_number={data.Species}&is_shiny={data.IsShiny}&form={data.Form}&gender={data.Gender}&ability_id={data.Ability}&ball={data.Ball}&nature_id={(int)data.Nature}&iv_hp={data.IV_HP}&iv_atk={data.IV_ATK}&iv_def={data.IV_DEF}&iv_spa={data.IV_SPA}&iv_spd={data.IV_SPD}&iv_spe={data.IV_SPE}&charcter={data.Characteristic}&hold_item={data.HeldItem}&ot_name={data.HandlingTrainerName}&qq={qq}&qq_group={groupId}&{Common.GetServerSignStr("getUserPokemon")}", "https://api.17yohui.com");
+        var str = GameInfo.GetStrings("zh-Hans");
+        var forms = FormConverter.GetFormList(data.Species, str.types, str.forms, GameInfo.GenderSymbolUnicode, data.Context);
+        string formName = forms[data.Form];//当前形态名称
+        return HttpUtils.Post("https://miraibot-admin.17yohui.com/PokemonHttpApi/showPKHeXUserPokemon", $"level={data.CurrentLevel}&pokemon_number={data.Species}&is_shiny={data.IsShiny}&formName={formName}&gender={data.Gender}&ability_id={data.Ability}&ball={data.Ball}&nature_id={(int)data.Nature}&iv_hp={data.IV_HP}&iv_atk={data.IV_ATK}&iv_def={data.IV_DEF}&iv_spa={data.IV_SPA}&iv_spd={data.IV_SPD}&iv_spe={data.IV_SPE}&charcter={data.Characteristic}&hold_item={data.HeldItem}&ot_name={data.HandlingTrainerName}&qq={qq}&qq_group={groupId}");
     }
 
     public override string GetPokemonInfo(T pkm)
     {
         string uploadJson = GetUserPokemon(userInfo.ID.ToString(), GroupId, pkm);
         string filePath = ""; // 初始化图片路径变量
-
         try
         {
             // 解析JSON到顶层响应模型
@@ -68,17 +70,7 @@ public class MiraiQQTrade<T> : AbstractTrade<T> where T : PKM, new()
                 // 检查接口是否调用成功（假设200为成功状态码）
                 if (response.Code == 200)
                 {
-                    // 确保data字段不为null
-                    if (response.Data != null)
-                    {
-                        // 提取data中的result字段（图片路径）
-                        filePath = response.Data.Base64 ?? "";
-                        Debug.WriteLine($"图片路径获取成功: {filePath}");
-                    }
-                    else
-                    {
-                        Debug.WriteLine("接口返回成功，但data字段为空");
-                    }
+                    filePath = response.Base64 ?? "";
                 }
                 else
                 {
@@ -90,10 +82,6 @@ public class MiraiQQTrade<T> : AbstractTrade<T> where T : PKM, new()
             {
                 Debug.WriteLine("JSON解析失败，响应内容为空");
             }
-        }
-        catch (JsonException ex)
-        {
-            Debug.WriteLine($"JSON格式错误，解析失败: {ex.Message}");
         }
         catch (Exception ex)
         {
@@ -110,16 +98,9 @@ public class GetUserPokemonResponse
     [JsonPropertyName("code")]
     public int Code { get; set; }
 
-    [JsonPropertyName("data")]
-    public GetUserPokemonData Data { get; set; } // 嵌套的data对象
+    [JsonPropertyName("base64")] // 对应data中的"base64"字段（图片路径）
+    public string? Base64 { get; set; }
 
     [JsonPropertyName("msg")]
     public string? Message { get; set; } // 可选的消息字段
-}
-
-// 定义嵌套数据模型：data字段的结构
-public class GetUserPokemonData
-{
-    [JsonPropertyName("base64")] // 对应data中的"base64"字段（图片路径）
-    public string? Base64 { get; set; }
 }

@@ -90,17 +90,17 @@ public class PsModule<T>  where T : PKM, new()
         }
     }
 
-    private void ProcessPS(long botQQ, string text, string qq, string nickName, string groupId, long message_id)
+    private void ProcessPS(long botQQ, string text, string qq, string nickName, string groupId, long sourceMessageId)
     { 
         LogUtil.LogInfo($"收到ps代码:\n{text}", nameof(PsModule<T>));
         var pss = text.Split("\n\n");
         if (pss.Length > 1)
         {
-            new MiraiQQTrade<T>(botQQ, qq, nickName, groupId, message_id).StartTradeMultiPs(text);
+            new MiraiQQTrade<T>(botQQ, qq, nickName, groupId, sourceMessageId).StartTradeMultiPs(text);
         }
         else
         {
-            new MiraiQQTrade<T>(botQQ, qq, nickName, groupId, message_id).StartTradePs(text);
+            new MiraiQQTrade<T>(botQQ, qq, nickName, groupId, sourceMessageId).StartTradePs(text);
         }
     }
 
@@ -125,7 +125,7 @@ public class PsModule<T>  where T : PKM, new()
         }
     }
 
-    private async void ProcessChinesePS(long botQQ, string text, string qq, string nickName, string groupId, long message_id = 0)
+    private async void ProcessChinesePS(long botQQ, string text, string qq, string nickName, string groupId, long sourceMessageId = 0)
     {
         await Task.Run(() =>
         {
@@ -138,7 +138,6 @@ public class PsModule<T>  where T : PKM, new()
             //else
             //{
             string jsonText = CheckPokemonGroupGold(qq, groupId);
-            LogUtil.LogInfo(jsonText, "测试");
             var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
             var response = JsonSerializer.Deserialize<APIResponse>(jsonText, options);
             if (response != null)
@@ -170,11 +169,11 @@ public class PsModule<T>  where T : PKM, new()
                         }
                     }
 
-                    new MiraiQQTrade<T>(botQQ, qq, nickName, groupId, message_id).StartTradeChinesePs(text);
+                    new MiraiQQTrade<T>(botQQ, qq, nickName, groupId, sourceMessageId).StartTradeChinesePs(text);
                 }
                 else
                 {
-                    MiraiQQBot<T>.SendGroupTextMessage(botQQ, groupId, repsonse_msg, message_id);
+                    MiraiQQBot<T>.SendGroupTextMessage(botQQ, groupId, repsonse_msg, sourceMessageId);
                     LogUtil.LogInfo($"{qq}-{repsonse_msg}", "测试");
                 }
 

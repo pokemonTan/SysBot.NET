@@ -18,7 +18,6 @@ public abstract class AbstractTrade<T> where T : PKM, new()
 {
     public abstract void SendMessage(string message);//完善此方法以实现发送消息功能
     public abstract string GetPokemonInfo(T pkm);//完善此方法以实现发送消息功能
-
     public abstract void SendMessageWithImage(string message, string filePath);//完善此方法以实现发送消息功能
     public abstract void SendMessageWithImageBase64(string message, string base64);//完善此方法以实现发送消息功能
 

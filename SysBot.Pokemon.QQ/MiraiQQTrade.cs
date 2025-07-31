@@ -1,3 +1,4 @@
+using Microsoft.VisualBasic;
 using PKHeX.Core;
 using SysBot.Base;
 using SysBot.Pokemon.Helpers;
@@ -66,8 +67,27 @@ public class MiraiQQTrade<T> : AbstractTrade<T> where T : PKM, new()
         int speed_st = 0;
         ushort CheckSum = data is ISanityChecksum s ? s.Checksum : Checksums.CRC16_CCITT(data.Data.AsSpan(data.SIZE_STORED));
 
+        byte HeightScalar = (byte)0;
+        byte WeightScalar = (byte)0;
+        byte SizeScalar = (byte)0;
+        if (data is IScaledSize ss)
+        {
+            HeightScalar = ss.HeightScalar;//身高
+            WeightScalar = ss.WeightScalar;//体重
+        }
+        if(data is  IScaledSize3 scale)
+        {
+            SizeScalar = scale.Scale;//大小
+        }
+        PokeSize pkHeight = PokeSizeUtil.GetSizeRating(HeightScalar);//身高单位
+        string heightUnit = pkHeight.ToString();
+        PokeSize pkWeight = PokeSizeUtil.GetSizeRating(WeightScalar);//体重单位
+        string weightUnit = pkWeight.ToString();
+        PokeSizeDetailed pkSizeDetail = PokeSizeDetailedUtil.GetSizeRating(SizeScalar); //大小单位
+        string sizeUnit = pkSizeDetail.ToString();
         var locationName = str.GetLocationName(data.WasEgg, data.MetLocation, data.Format, data.Generation, data.Version);
-
+        var list = str.gamelist;
+        string gameVersion = list[(byte)data.Version];
         if (data is IHyperTrain h)
         {
             for (int i = 0; i < 6; i++)
@@ -110,6 +130,7 @@ public class MiraiQQTrade<T> : AbstractTrade<T> where T : PKM, new()
             $"&ball={data.Ball}" +
             $"&nature_id={(int)data.Nature}" +
             $"&mint_nature_id={(int)data.StatNature}" +
+            $"&gameVersion={gameVersion}" +
             $"&iv_hp={data.IV_HP}" +
             $"&iv_atk={data.IV_ATK}" +
             $"&iv_def={data.IV_DEF}" +
@@ -151,6 +172,10 @@ public class MiraiQQTrade<T> : AbstractTrade<T> where T : PKM, new()
             $"&move4_PP={data.Move4_PP}" +
             $"&height={data.PersonalInfo.Height}" +
             $"&weight={data.PersonalInfo.Weight}" +
+            $"&scale={SizeScalar}" +
+            $"&heightUnit={heightUnit}" +
+            $"&weightUnit={weightUnit}" +
+            $"&sizeUnit={sizeUnit}" +
             $"&meetDate={data.MetDate}" +
             $"&meetLocation={locationName}" +
             $"&meetLevel={data.MetLevel}" +

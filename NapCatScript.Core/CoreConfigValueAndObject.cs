@@ -22,8 +22,12 @@ public static class CoreConfigValueAndObject
     static CoreConfigValueAndObject()
     {
         InstanceLog.Info("加载核心配置!");
-        string? useUri = "ws://39.108.178.212:3001/?access_token=G5.Zk.IqX.";
-        string? httpUri = "http://39.108.178.212:3000/";
+        //我的服务器
+        //string? useUri = "ws://39.108.178.212:3001/?access_token=G5.Zk.IqX.";
+        //string? httpUri = "http://39.108.178.212:3000/";
+        //文件服务器
+        string? useUri = "ws://14.152.49.93:3001/?access_token=G5.Zk.IqX.";
+        string? httpUri = "http://14.152.49.93:3000/";
         string? httpAccessToken = "p2?4UpMx9r";
         BotId = "3861914692";
         if (string.IsNullOrEmpty(useUri) || string.IsNullOrEmpty(httpUri)) {

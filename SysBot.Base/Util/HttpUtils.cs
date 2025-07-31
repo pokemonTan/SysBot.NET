@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -53,9 +54,18 @@ namespace SysBot.Base
         // 同步包装器（不推荐，因为它会阻塞调用线程，但为了满足某些同步调用需求）
         public static string Post(string url, string postDataStr, string referer = "")
         {
-            Task<string> task = PostAsync(url, postDataStr, referer);
-            task.Wait(); // 这将阻塞当前线程，直到任务完成
-            return task.Result;
+            try
+            {
+                Task<string> task = PostAsync(url, postDataStr, referer);
+                task.Wait(); // 这将阻塞当前线程，直到任务完成
+                return task.Result;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return "";
+            }
+            
         }
     }
 }

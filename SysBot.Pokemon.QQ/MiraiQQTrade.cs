@@ -141,6 +141,14 @@ public class MiraiQQTrade<T> : AbstractTrade<T> where T : PKM, new()
             $"&ev_spa={data.EV_SPA}" +
             $"&ev_spd={data.EV_SPD}" +
             $"&ev_spe={data.EV_SPE}" +
+            $"&move1={data.Move1}" +
+            $"&move2={data.Move2}" +
+            $"&move3={data.Move3}" +
+            $"&move4={data.Move4}" +
+            $"&move1_PP={data.Move1_PP}" +
+            $"&move2_PP={data.Move2_PP}" +
+            $"&move3_PP={data.Move3_PP}" +
+            $"&move4_PP={data.Move4_PP}" +
             $"&height={data.PersonalInfo.Height}" +
             $"&weight={data.PersonalInfo.Weight}" +
             $"&meetDate={data.MetDate}" +

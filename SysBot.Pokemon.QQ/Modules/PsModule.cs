@@ -13,6 +13,8 @@ using NapCatScript.Core.JsonFormat;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using static NapCatScript.Core.JsonFormat.JsonModel.get_profile_like;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SysBot.Pokemon.QQ;
 public class APIResponse
@@ -25,6 +27,18 @@ public class APIResponse
 
     [JsonPropertyName("data")]
     public PokemonData? Data { get; set; }
+}
+
+public class PokemonTextAPIResponse
+{
+    [JsonPropertyName("code")]
+    public int Code { get; set; }
+
+    [JsonPropertyName("msg")]
+    public string? Msg { get; set; }
+
+    [JsonPropertyName("result")]
+    public string? Result { get; set; }
 }
 
 public class PokemonData
@@ -74,20 +88,85 @@ public class PsModule<T>  where T : PKM, new()
         if (string.IsNullOrWhiteSpace(firstPlain)) return;
         
         var qq = mesg.SenderId;
-        var nickName = mesg.SenderMemberName;
+        var memberName = mesg.SenderMemberName;
+        var nickName = mesg.SenderNickName;
         var groupId = mesg.GroupId;
         long botQQ = mesg.BotQQ;
         long sourceMessageId = mesg.MessageId;
+
+        if (firstPlain.StartsWith("兑换宝可梦"))
+        {
+            string jsonText = CheckPokemonGroupGold(qq, groupId);
+            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var response = JsonSerializer.Deserialize<APIResponse>(jsonText, options);
+            if (response != null)
+            {
+                int repsonse_code = (int)response.Code;
+                string? repsonse_msg = response.Msg ?? "";
+                if (repsonse_code == 200)
+                {
+                    LogUtil.LogInfo($"{qq}-{repsonse_msg}", "测试");
+                    if (response.Data != null)
+                    {
+                        PokemonData response_data = response.Data;
+                        if (typeof(T) == typeof(PK8) && response_data.Swsh != null)
+                        {
+                            UpdateOrAddGameTradeOTInfo(qq, response_data.Swsh);
+                        }
+                        if (typeof(T) == typeof(PB8) && response_data.Bdsp != null)
+                        {
+                            UpdateOrAddGameTradeOTInfo(qq, response_data.Bdsp);
+                        }
+                        if (typeof(T) == typeof(PA8) && response_data.Pla != null)
+                        {
+                            UpdateOrAddGameTradeOTInfo(qq, response_data.Pla);
+                        }
+                        if (typeof(T) == typeof(PK9) && response_data.Sv != null)
+                        {
+                            UpdateOrAddGameTradeOTInfo(qq, response_data.Sv);
+                        }
+                    }
+
+                     jsonText = HttpUtils.Post("https://miraibot-admin.17yohui.com/PokemonHttpApi/exchangeUserPokemonToPKHeX", $"messageText={firstPlain}" +
+                        $"&senderId={qq}" +
+                        $"&groupId={groupId}" +
+                        $"&botQQ={botQQ}" +
+                        $"&sourceMessageId={sourceMessageId}" +
+                        $"&groupNickname={memberName}" +
+                        $"&sendNickname={nickName}"
+                        );
+                    var options1 = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                    var  response1 = JsonSerializer.Deserialize<PokemonTextAPIResponse>(jsonText, options1);
+                    if (response1 != null)
+                    {
+                        int repsonse_code1 = (int)response1.Code;
+                        string? repsonse_msg1 = response1.Msg ?? "";
+                        string? result = response1.Result ?? "";
+                        if (!string.IsNullOrEmpty(result))
+                        {
+                            ProcessChinesePS(botQQ, result, qq, memberName, groupId, sourceMessageId);
+                        }
+                        return;
+                    }
+                }
+                else
+                {
+                    MiraiQQBot<T>.SendGroupTextMessage(botQQ, groupId, repsonse_msg, sourceMessageId);
+                    LogUtil.LogInfo($"{qq}-{repsonse_msg}", "测试");
+                }
+
+            }
+        }
         LogUtil.LogInfo($"接受到消息：[{firstPlain}]", "测试");
         //中英文判断
-        if (IsChinesePS(firstPlain))
-        {
-            ProcessChinesePS(botQQ, firstPlain, qq, nickName, groupId, sourceMessageId);
-        }
-        else if (IsPS(firstPlain))
-        {
-            ProcessPS(botQQ, firstPlain, qq, nickName, groupId, sourceMessageId);
-        }
+        //if (IsChinesePS(firstPlain))
+        //{
+        //    ProcessChinesePS(botQQ, firstPlain, qq, memberName, groupId, sourceMessageId);
+        //}
+        //else if (IsPS(firstPlain))
+        //{
+        //    ProcessPS(botQQ, firstPlain, qq, memberName, groupId, sourceMessageId);
+        //}
     }
 
     private void ProcessPS(long botQQ, string text, string qq, string nickName, string groupId, long sourceMessageId)

@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using NapCatScript.Core.JsonFormat.Msgs;
 using NapCatScript.Core.JsonFormat;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace SysBot.Pokemon.QQ;
 
@@ -73,20 +75,16 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
             ? $"Trade finished. Enjoy your {(Species) tradedToUser}!"
             : "Trade finished!");
         LogUtil.LogText(message);
-        string jsonResult = DecrPokemonGroupGold(info.Trainer.ID.ToString(), GroupId, new SharePartnerInfo("","","",0,0,0));
-        //int code = Convert.ToInt32(jsonResult.Fetch("code"));
-        //string? msg = jsonResult.Fetch("msg");
-        //if (code == 200)
-        //{
-        //    MiraiQQBot<T>.SendGroupMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {msg}").Build(), GroupId);
-        //    LogUtil.LogInfo($"{info.Trainer.ID.ToString()}-{msg}", "测试");
-        //}
-        //else
-        //{
-        //    MiraiQQBot<T>.SendGroupOrTempMessage(new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {msg}").Build(), info.Trainer.ID.ToString(), GroupId);
-        //    LogUtil.LogInfo($"{info.Trainer.ID.ToString()}-{msg}", "测试");
-        //}
-    }
+        string jsonText = DecrPokemonGroupGold(info.Trainer.ID.ToString(), GroupId, new SharePartnerInfo("","","",0,0,0));
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var response = JsonSerializer.Deserialize<PokemonTextAPIResponse>(jsonText, options);
+        if (response != null)
+        {
+            int repsonse_code = (int)response.Code;
+            string? repsonse_msg = response.Msg ?? "";
+            MiraiQQBot<T>.SendGroupTextMessage(BotQQ, GroupId, repsonse_msg, MessageId);
+        }
+        }
 
     public void SendNotificationWithImage(PokeRoutineExecutor<T> routine, PokeTradeDetail<T> info, string message, string base64Image)
     {
@@ -109,17 +107,16 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
             ? $"Trade finished. Enjoy your {(Species)tradedToUser}!"
             : "Trade finished!");
         LogUtil.LogText(message);
-        string jsonResult = DecrPokemonGroupGold(info.Trainer.ID.ToString(), GroupId, sharePartnerInfo);
-        //int code = Convert.ToInt32(jsonResult.Fetch("code"));
-        //string? responseMsg = jsonResult.Fetch("msg");
-        //MessageChainBuilder builder = new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {responseMsg}");
-        //string[] base64Array = base64Image.Split('#', StringSplitOptions.RemoveEmptyEntries);
-        //foreach (var base64 in base64Array)
-        //{
-        //    builder.ImageFromBase64(base64);
-        //}
-        //MessageChain finalMessageChain = builder.Build();
-        //MiraiQQBot<T>.SendGroupOrTempMessage(finalMessageChain, info.Trainer.ID.ToString(), GroupId);
+        string jsonText = DecrPokemonGroupGold(info.Trainer.ID.ToString(), GroupId, sharePartnerInfo);
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var response = JsonSerializer.Deserialize<PokemonTextAPIResponse>(jsonText, options);
+        if (response != null)
+        {
+            int repsonse_code = (int)response.Code;
+            string? repsonse_msg = response.Msg ?? "";
+            MiraiQQBot<T>.SendGroupTextImageBase64Message(BotQQ, GroupId, repsonse_msg, base64Image, MessageId);
+            //string uploadJsonResult = UploadUserPokemon(info.Trainer.ID.ToString(), GroupId, Data, sharePartnerInfo);
+        }
     }
 
     /// <summary>
@@ -137,20 +134,16 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
             ? $"Trade finished. Enjoy your {(Species)tradedToUser}!"
             : "Trade finished!");
         LogUtil.LogText(message);
-        string jsonResult = DecrPokemonGroupGold(info.Trainer.ID.ToString(),  GroupId, sharePartnerInfo);
-        //int code = Convert.ToInt32(jsonResult.Fetch("code"));
-        //string? responseMsg = jsonResult.Fetch("msg");
-        //MessageChainBuilder builder = new MessageChainBuilder().At($"{info.Trainer.ID}").Plain($" {responseMsg}");
-        string[] base64Array = base64Image.Split('#', StringSplitOptions.RemoveEmptyEntries);
-        //foreach (var base64 in base64Array)
-        //{
-        //    builder.ImageFromBase64(base64);
-        //}
-        //MessageChain finalMessageChain = builder.Build();
-        //MiraiQQBot<T>.SendGroupOrTempMessage(finalMessageChain, info.Trainer.ID.ToString(), GroupId);
-        //int total_integral = Convert.ToInt32(jsonResult.Fetch("data.total_integral"));
-        //LogUtil.LogInfo($"QQ[{info.Trainer.ID.ToString()}]在QQ群[{GroupId}]还剩余[{total_integral}]熊熊币", "接口查询");
-        //string uploadJsonResult = UploadUserPokemon(info.Trainer.ID.ToString(), GroupId, Data, sharePartnerInfo);
+        string jsonText = DecrPokemonGroupGold(info.Trainer.ID.ToString(),  GroupId, sharePartnerInfo);
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var response = JsonSerializer.Deserialize<PokemonTextAPIResponse>(jsonText, options);
+        if (response != null)
+        {
+            int repsonse_code = (int)response.Code;
+            string? repsonse_msg = response.Msg ?? "";
+            MiraiQQBot<T>.SendGroupTextImageBase64Message(BotQQ, GroupId, repsonse_msg, base64Image, MessageId);
+            //string uploadJsonResult = UploadUserPokemon(info.Trainer.ID.ToString(), GroupId, Data, sharePartnerInfo);
+        }
         return 0;
     }
 
@@ -183,7 +176,7 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
             $"@{info.Trainer.TrainerName} (ID: {info.ID}): Initializing trade{receive} with you. Please be ready.";
         msg += $" Your trade code is: {info.Code:0000 0000}";
         LogUtil.LogText(msg);
-        var text = $"\n派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}\n状态:初始化";
+        var text = $"派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}\n状态:初始化";
         List<T> batchPKMs = (List<T>)info.Context.GetValueOrDefault("batch", new List<T>());
         if (batchPKMs.Count > 1)
         {
@@ -195,7 +188,7 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
     public void TradePreviewPokemon(PokeRoutineExecutor<T> routine, string base64Image1, string base64Image2, string base64Image3, PokeTradeDetail<T> info)
     {
         var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
-        var text = $"\n派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}";
+        var text = $"派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}";
         if (Data.IsEgg)
         {
             text += $"\n蛋属性分析:宝可梦[{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}],球种:{ShowdownTranslator<T>.GameStringsZh.balllist[Data.Ball]},个体:{Data.IV_HP} HP / {Data.IV_ATK} 攻击 / {Data.IV_DEF} 防御 / {Data.IV_SPA} 特攻 / {Data.IV_SPD} 特防 / {Data.IV_SPE} 速度,需要的孵化圈数[{Data.OriginalTrainerFriendship}],是否闪光:{(Data.IsShiny ? "是" : "不闪")} \n状态:预览";
@@ -222,7 +215,7 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         var message = $"I'm waiting for you{trainer}! My IGN is {routine.InGameName}.";
         message += $" Your trade code is: {info.Code:0000 0000}";
         LogUtil.LogText(message);
-        var text = $"\n派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}\n状态:搜索中\n我在等你，我的游戏名是[{routine.InGameName}]";
+        var text = $"派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}\n状态:搜索中\n我在等你，我的游戏名是[{routine.InGameName}]";
         List<T> batchPKMs = (List<T>)info.Context.GetValueOrDefault("batch", new List<T>());
         if (batchPKMs.Count > 1)
         {
@@ -249,7 +242,7 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
         var message = $"I'm waiting for you{trainer}! My IGN is {routine.InGameName}.";
         message += $" Your trade code is: {info.Code:0000 0000}";
         LogUtil.LogText(message);
-        var text = $"\n派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}\n状态:搜索中\n我会等你[{second}]秒,我的游戏名是[{routine.InGameName}]";
+        var text = $"派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}\n状态:搜索中\n我会等你[{second}]秒,我的游戏名是[{routine.InGameName}]";
         List<T> batchPKMs = (List<T>)info.Context.GetValueOrDefault("batch", new List<T>());
         if (batchPKMs.Count > 1)
         {
@@ -297,4 +290,14 @@ public class MiraiQQTradeNotifier<T> : IPokeTradeNotifier<T> where T : PKM, new(
             MiraiQQBot<T>.SendGroupTextMessage(BotQQ, GroupId, text, MessageId);
         }
     }
+}
+
+
+public class PokemonResponse
+{
+    [JsonPropertyName("code")]
+    public int Code { get; set; }
+
+    [JsonPropertyName("msg")]
+    public string? Msg { get; set; }
 }

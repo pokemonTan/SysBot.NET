@@ -2,6 +2,9 @@ using PKHeX.Core;
 using PKHeX.Core.Searching;
 using SysBot.Base;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
@@ -56,7 +59,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
     // Track the last Pokémon we were offered since it persists between trades.
     private byte[] lastOffered = new byte[8];
 
-    //TradeFinishedImageRecord tradeFinishedRecord = new TradeFinishedImageRecord();
+    TradeFinishedImageRecord tradeFinishedRecord = new TradeFinishedImageRecord();
 
     public override async Task MainLoop(CancellationToken token)
     {
@@ -217,8 +220,8 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
     private async Task<PokeTradeResult> PerformLinkCodeTrade(SAV9SV sav, PokeTradeDetail<PK9> poke, CancellationToken token)
     {
-        //tradeFinishedRecord.Image1 = tradeFinishedRecord.Image2 = tradeFinishedRecord.Image3 = tradeFinishedRecord.Image4 = tradeFinishedRecord.Image5 = "";
-        //ScreenCaptureResult screenCaptureResult = new ScreenCaptureResult();
+        tradeFinishedRecord.Image1 = tradeFinishedRecord.Image2 = tradeFinishedRecord.Image3 = tradeFinishedRecord.Image4 = tradeFinishedRecord.Image5 = "";
+        ScreenCaptureResult screenCaptureResult = new ScreenCaptureResult();
         // Update Barrier Settings
         UpdateBarrier(poke.IsSynchronized);
         poke.TradeInitialize(this);
@@ -253,16 +256,16 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         // Assumes we're freshly in the Portal and the cursor is over Link Trade.
         Log("Selecting Link Trade.");
 
-        //screenCaptureResult = await CaptureScreenWithPath(token);
+        screenCaptureResult = await CaptureScreenWithPath(token);
 
-        //if (Common.ContainsAllSubstrings(await Common.ImageOCRChinese(screenCaptureResult.FilePath), new string[] { "信息", "结束" }))
-        //{
-        //    LogUtil.LogInfo($"[输入连接交换密码前]检测到新闻，关闭它！截图[{screenCaptureResult.FilePath}]", "截图");
-        //    Common.DeleteFile(screenCaptureResult.FilePath);//删除文件
-        //    await Click(B, 1_000, token).ConfigureAwait(false);
-        //    await Task.Delay(0_500, token).ConfigureAwait(false);
-        //    await Click(B, 1_000, token).ConfigureAwait(false);
-        //}
+        if (Common.ContainsAllSubstrings(await Common.ImageOCRChinese(screenCaptureResult.FilePath), new string[] { "信息", "结束" }))
+        {
+            LogUtil.LogInfo($"[输入连接交换密码前]检测到新闻，关闭它！截图[{screenCaptureResult.FilePath}]", "截图");
+            Common.DeleteFile(screenCaptureResult.FilePath);//删除文件
+            await Click(B, 1_000, token).ConfigureAwait(false);
+            await Task.Delay(0_500, token).ConfigureAwait(false);
+            await Click(B, 1_000, token).ConfigureAwait(false);
+        }
 
         // Handle the news popping up.
         if (await SwitchConnection.IsProgramRunning(LibAppletWeID, token).ConfigureAwait(false))
@@ -278,15 +281,15 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             await Click(X, 1_000, token).ConfigureAwait(false);
             await Click(PLUS, 1_000, token).ConfigureAwait(false);
 
-            //screenCaptureResult = await CaptureScreenWithPath(token);
-            //if (!Common.ContainsAllSubstrings(await Common.ImageOCRChinese(screenCaptureResult.FilePath), new string[] { "输入", "退出" }))
-            //{
-            //    LogUtil.LogInfo($"[输入连接交换密码界面]截图[{screenCaptureResult.FilePath}]", "截图");
-            //    Common.DeleteFile(screenCaptureResult.FilePath);//删除文件
-            //    StartFromOverworld = false;
-            //    await RecoverToOverworld(token).ConfigureAwait(false);
-            //    return PokeTradeResult.RecoverStart;
-            //}
+            screenCaptureResult = await CaptureScreenWithPath(token);
+            if (!Common.ContainsAllSubstrings(await Common.ImageOCRChinese(screenCaptureResult.FilePath), new string[] { "输入", "退出" }))
+            {
+                LogUtil.LogInfo($"[输入连接交换密码界面]截图[{screenCaptureResult.FilePath}]", "截图");
+                Common.DeleteFile(screenCaptureResult.FilePath);//删除文件
+                StartFromOverworld = false;
+                await RecoverToOverworld(token).ConfigureAwait(false);
+                return PokeTradeResult.RecoverStart;
+            }
 
             // Loading code entry.
             if (poke.Type != PokeTradeType.Random)
@@ -314,10 +317,39 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         WaitAtBarrierIfApplicable(token);
         await Click(A, 1_000, token).ConfigureAwait(false);
 
-        poke.TradeSearching(this);
+        poke.TradeSearchingWithSecond(this, 20, true);
 
-        // Wait for a Trainer...
-        var partnerFound = await WaitForTradePartner(token).ConfigureAwait(false);
+        Stopwatch TradeSearchingStopwatch = new Stopwatch();
+        TradeSearchingStopwatch.Start(); // 开始计时
+
+        bool partnerFound = false;
+        int searchRetryCount = 0;
+        while (searchRetryCount <= 1)
+        {
+            searchRetryCount++;
+            // Wait for a Trainer...
+            partnerFound = await WaitForTradePartner(token).ConfigureAwait(false);
+            if (!partnerFound)
+            {
+                screenCaptureResult = await CaptureScreenWithBase64(token);
+                LogUtil.LogInfo($"在[没有发现连接对象]的时候截图", "截图");
+                poke.SendNotificationWithImage(this, $" 没有找到你，正在进行第{searchRetryCount}次重试...", screenCaptureResult.Base64String);
+                //这里提示没有找到对象，按A关掉
+                await Click(A, 1_000, token).ConfigureAwait(false);
+                await Task.Delay(0_500, token).ConfigureAwait(false);
+                //再次搜索
+                await Click(A, 1_000, token).ConfigureAwait(false);
+                await Task.Delay(0_500, token).ConfigureAwait(false);
+                //确认
+                await Click(A, 1_000, token).ConfigureAwait(false);
+                await Task.Delay(0_500, token).ConfigureAwait(false);
+                await Click(A, 1_000, token).ConfigureAwait(false);
+            }
+            else
+            {
+                break;
+            }
+        }
 
         if (token.IsCancellationRequested)
         {
@@ -326,15 +358,24 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
             return PokeTradeResult.RoutineCancel;
         }
+
         if (!partnerFound)
         {
+
             if (!await RecoverToPortal(token).ConfigureAwait(false))
             {
-                Log("Failed to recover to portal.");
+                Log("恢复到宝可梦入口站失败.");
                 await RecoverToOverworld(token).ConfigureAwait(false);
             }
             return PokeTradeResult.NoTrainerFound;
         }
+        else
+        {
+            TradeSearchingStopwatch.Stop(); // 停止计时
+            Log($"搜寻耗时[{TradeSearchingStopwatch.Elapsed.Seconds}]秒时发现连接上了");
+            poke.SendNotification(this, $" 搜寻了[{TradeSearchingStopwatch.Elapsed.Seconds}]秒,发现连接交换对象...");
+        }
+
 
         Hub.Config.Stream.EndEnterCode(this);
 
@@ -348,7 +389,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 await Click(A, 1_000, token).ConfigureAwait(false); // Ensures we dismiss a popup.
                 if (!await RecoverToPortal(token).ConfigureAwait(false))
                 {
-                    Log("Failed to recover to portal.");
+                    Log("恢复到宝可梦入口站失败.");
                     await RecoverToOverworld(token).ConfigureAwait(false);
                 }
                 return PokeTradeResult.RecoverOpenBox;
@@ -357,28 +398,61 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         await Task.Delay(3_000 + Hub.Config.Timings.ExtraTimeOpenBox, token).ConfigureAwait(false);
 
         var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
+        var trainerName = tradePartner.TrainerName;
+        var trainerTID = tradePartner.TID7;
+        var trainerSID = tradePartner.SID7;
         var trainerNID = await GetTradePartnerNID(TradePartnerNIDOffset, token).ConfigureAwait(false);
         RecordUtil<PokeTradeBotSV>.Record($"Initiating\t{trainerNID:X16}\t{tradePartner.TrainerName}\t{poke.Trainer.TrainerName}\t{poke.Trainer.ID}\t{poke.ID}\t{toSend.EncryptionConstant:X8}");
-        Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7} (ID: {trainerNID})");
+        Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7}-{tradePartner.SID7} (ID: {trainerNID})");
 
-        var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);
-        if (partnerCheck != PokeTradeResult.Success)
-        {
-            await Click(A, 1_000, token).ConfigureAwait(false); // Ensures we dismiss a popup.
-            await ExitTradeToPortal(false, token).ConfigureAwait(false);
-            return partnerCheck;
-        }
+        poke.SendNotification(this, $" 发现连接交换对象[{tradePartner.TrainerName}](ID:{tradePartner.TID7}). 等待他传宝可梦...");
+        //poke.SendNotificationWithImage(this, $" 发现连接交换对象[{tradePartner.TrainerName}](ID:{tradePartner.TID7}). 等待他传宝可梦...", screenCaptureResult.Base64String);
 
-        // Hard check to verify that the offset changed from the last thing offered from the previous trade.
-        // This is because box opening times can vary per person, the offset persists between trades, and can also change offset between trades.
+        //检查训练家的名声，检查是否被拉黑
+        //var partnerCheck = await CheckPartnerReputation(this, poke, trainerNID, tradePartner.TrainerName, AbuseSettings, token);
+        //if (partnerCheck != PokeTradeResult.Success)
+        //{
+        //    await Click(A, 1_000, token).ConfigureAwait(false); // Ensures we dismiss a popup.
+        //    await ExitTradeToPortal(false, token).ConfigureAwait(false);
+        //    return partnerCheck;
+        //}
+
+        //while (true)
+        //{
+        PokeTradeResult exchange_result = await ExchangePokemon(sav, poke, toSend, tradePartner, trainerNID, trainerName, trainerSID, trainerTID, token);
+
+
+        await ExitTradeToPortal(false, token).ConfigureAwait(false);
+        return PokeTradeResult.Success;
+    }
+
+    /// <summary>
+    /// 交换宝可梦
+    /// </summary>
+    /// <param name="sav"></param>
+    /// <param name="poke"></param>
+    /// <param name="toSend"></param>
+    /// <param name="tradePartner"></param>
+    /// <param name="trainerNID"></param>
+    /// <param name="trainerName"></param>
+    /// <param name="trainerSID"></param>
+    /// <param name="trainerTID"></param>
+    /// <param name="TradeTotalStopwatch"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public async Task<PokeTradeResult> ExchangePokemon(SAV9SV sav, PokeTradeDetail<PK9> poke, PK9 toSend, TradePartnerSV tradePartner, ulong trainerNID, string trainerName, string trainerSID, string trainerTID, CancellationToken token)
+    {
+        Log($"开始新一轮的循环");
+        Stopwatch TradeTotalStopwatch = new Stopwatch();//交易全过程
+        TradeTotalStopwatch.Start();//交易全过程开始计时
+        // 硬检查，以验证抵消从上次交易提供的最后一个精灵是否改变。
+        // 这是因为打开宝可梦盒子的时间因人而异，交易之间的抵消持续存在，交易之间的抵消也可以改变。
         var tradeOffered = await ReadUntilChanged(TradePartnerOfferedOffset, lastOffered, 10_000, 0_500, false, true, token).ConfigureAwait(false);
         if (!tradeOffered)
         {
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
             return PokeTradeResult.TrainerTooSlow;
         }
-
-        poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
 
         if (poke.Type == PokeTradeType.Dump)
         {
@@ -392,9 +466,14 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
         if (offered == null || offered.Species < 1 || !offered.ChecksumValid)
         {
-            Log("Trade ended because a valid Pokémon was not offered.");
+            Log("等待了30秒还是没选择宝可梦");
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
             return PokeTradeResult.TrainerTooSlow;
+        }
+        else
+        {
+            Log($"对方已选择宝可梦[{ShowdownTranslator<PK9>.GameStringsZh.Species[offered.Species]}]\n个体值:{GetIVSText(offered)}\n努力值:{GetEVSText(offered)}");
+            GetSelectShinyPokeNotifyMessage(poke, offered);
         }
 
         var trainer = new PartnerDataHolder(0, tradePartner.TrainerName, tradePartner.TID7);
@@ -404,9 +483,8 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
             return update;
         }
-
         Log("Confirming trade.");
-        var tradeResult = await ConfirmAndStartTrading(poke, token).ConfigureAwait(false);
+        var tradeResult = await ConfirmAndStartTrading(poke, offered, token).ConfigureAwait(false);
         if (tradeResult != PokeTradeResult.Success)
         {
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
@@ -423,17 +501,20 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
 
         // Trade was Successful!
         var received = await ReadPokemon(BoxStartOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
+        Log($"要发送过去的宝可梦为[{ShowdownTranslator<PK9>.GameStringsZh.Species[toSend.Species]}]({toSend.Checksum}),接收到的宝可梦为[{ShowdownTranslator<PK9>.GameStringsZh.Species[received.Species]}]({received.Checksum})");
         // Pokémon in b1s1 is same as the one they were supposed to receive (was never sent).
         if (SearchUtil.HashByDetails(received) == SearchUtil.HashByDetails(toSend) && received.Checksum == toSend.Checksum)
         {
-            Log("User did not complete the trade.");
+            Log("用户没有完成交换.");
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
             return PokeTradeResult.TrainerTooSlow;
         }
 
         // As long as we got rid of our inject in b1s1, assume the trade went through.
-        Log("User completed the trade.");
-        poke.TradeFinished(this, received);
+        Log("用户完成交换.");
+        string base64Image = $"{tradeFinishedRecord.Image1}";
+        SharePartnerInfo sharePartnerInfo = new SharePartnerInfo(tradePartner.TID7, tradePartner.SID7, tradePartner.TrainerName, tradePartner.Game, tradePartner.Gender, tradePartner.Language);
+        int total_integral = poke.TradeFinishedWithImageAndElapsedTime(this, received, base64Image, TradeTotalStopwatch.Elapsed.Seconds, sharePartnerInfo);
 
         // Only log if we completed the trade.
         UpdateCountsAndExport(poke, received, toSend);
@@ -444,9 +525,18 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         // Sometimes they offered another mon, so store that immediately upon leaving Union Room.
         lastOffered = await SwitchConnection.ReadBytesAbsoluteAsync(TradePartnerOfferedOffset, 8, token).ConfigureAwait(false);
 
-        await ExitTradeToPortal(false, token).ConfigureAwait(false);
-        return PokeTradeResult.Success;
+        //if (total_integral < 10)
+        //{
+        //    poke.SendNotification(this, $" 熊熊币已不足10个,找个地方充满熊熊币再来吧！");
+        //    return PokeTradeResult.RoutineCancel;
+        //}
+        //else
+        //{
+            Log($"还有[{total_integral}]熊熊币");
+            return PokeTradeResult.Success;
+        //}
     }
+
 
     private void UpdateCountsAndExport(PokeTradeDetail<PK9> poke, PK9 received, PK9 toSend)
     {
@@ -467,14 +557,119 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         }
     }
 
-    private async Task<PokeTradeResult> ConfirmAndStartTrading(PokeTradeDetail<PK9> detail, CancellationToken token)
+    /// <summary>
+    /// 获取选择闪光宝可梦时的通知文本
+    /// </summary>
+    /// <param name="offered"></param>
+    /// <returns></returns>
+    private void GetSelectShinyPokeNotifyMessage(PokeTradeDetail<PK9> detail, PK9 offered)
     {
+        if (offered.IsShiny)
+        {
+            string notificationMessage = $" 卧槽，闪光{ShowdownTranslator<PK9>.GameStringsZh.balllist[offered.Ball]}[{ShowdownTranslator<PK9>.GameStringsZh.Species[offered.Species]}]\n个体值:{GetIVSText(offered)}\n";
+            if (offered.IsEgg)
+            {
+                notificationMessage += $"需要的孵化圈数[{offered.OriginalTrainerFriendship}]";
+            }
+            else
+            {
+                notificationMessage += $"努力值:{GetEVSText(offered)}";
+            }
+            notificationMessage += $"\n那我可笑纳了";
+            detail.SendNotification(this, notificationMessage);
+        }
+    }
+
+    /// <summary>
+    /// 获取个体值文本
+    /// </summary>
+    /// <param name="offered"></param>
+    /// <returns></returns>
+    private string GetIVSText(PK9 offered)
+    {
+        if (offered.IVTotal == 186)
+        {
+            return "6V";
+        }
+        else if (offered.IVTotal == 155)
+        {
+            if (offered.IV_ATK == 0)
+            {
+                return "5V0攻";
+            }
+            else if (offered.IV_SPA == 0)
+            {
+                return "5V0特攻";
+            }
+            else if (offered.IV_SPE == 0)
+            {
+                return "5V0速";
+            }
+        }
+        else if (offered.IVTotal == 124)
+        {
+            if (offered.IV_ATK == 0 && offered.IV_SPE == 0)
+            {
+                return "4V0攻0速";
+            }
+        }
+        return $"{offered.IV_HP} HP / {offered.IV_ATK} 攻击 / {offered.IV_DEF} 防御 / {offered.IV_SPA} 特攻 / {offered.IV_SPD} 特防 / {offered.IV_SPE} 速度";
+    }
+
+    /// <summary>
+    /// 获取努力值文本
+    /// </summary>
+    /// <param name="offered"></param>
+    /// <returns></returns>
+    private string GetEVSText(PK9 offered)
+    {
+        string evTexts = "";
+        if (offered.EV_HP != 0)
+        {
+            evTexts += $" {offered.EV_HP} HP /";
+        }
+        if (offered.EV_ATK != 0)
+        {
+            evTexts += $" {offered.EV_ATK} 攻击 /";
+        }
+        if (offered.EV_DEF != 0)
+        {
+            evTexts += $" {offered.EV_DEF} 防御 /";
+        }
+        if (offered.EV_SPA != 0)
+        {
+            evTexts += $" {offered.EV_SPA} 特攻 /";
+        }
+        if (offered.EV_SPD != 0)
+        {
+            evTexts += $" {offered.EV_SPD} 特防 /";
+        }
+        if (offered.EV_SPE != 0)
+        {
+            evTexts += $" {offered.EV_SPE} 速度 /";
+        }
+        if (evTexts != "")
+        {
+            return evTexts.EndsWith("/") ? evTexts.Substring(0, evTexts.Length - 1) : evTexts;
+        }
+        else
+        {
+            return "不够努力";
+        }
+    }
+
+    private async Task<PokeTradeResult> ConfirmAndStartTrading(PokeTradeDetail<PK9> detail, PK9 old_offered, CancellationToken token)
+    {
+        ScreenCaptureResult screenCaptureResult = new ScreenCaptureResult();
         // We'll keep watching B1S1 for a change to indicate a trade started -> should try quitting at that point.
         var oldEC = await SwitchConnection.ReadBytesAbsoluteAsync(BoxStartOffset, 8, token).ConfigureAwait(false);
 
         await Click(A, 3_000, token).ConfigureAwait(false);
+        var old_offered_cln = (PK9)old_offered.Clone();
+        Hub.Config.Trade.MaxTradeConfirmTime = 45;//朱紫等待确认时间延长到45秒
         for (int i = 0; i < Hub.Config.Trade.MaxTradeConfirmTime; i++)
         {
+            //没实现的功能，用户是否变得狡猾
             if (await IsUserBeingShifty(detail, token).ConfigureAwait(false))
                 return PokeTradeResult.SuspiciousActivity;
 
@@ -483,23 +678,110 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 return PokeTradeResult.TrainerLeft;
 
             await Click(A, 1_000, token).ConfigureAwait(false);
-
+            Log($"[ConfirmAndStartTrading]当i为[{i}]的时候按下了A");
+            var offered = await ReadPokemon(TradePartnerOfferedOffset, BoxFormatSlotSize, token).ConfigureAwait(false);
+            if (offered.Species != 0 && offered.ChecksumValid)
+            {
+                if (offered.Checksum != old_offered_cln.Checksum)
+                {
+                    Log($"[ConfirmAndStartTrading]对方已重新选择宝可梦[{ShowdownTranslator<PK9>.GameStringsZh.Species[offered.Species]}]\n个体值:{GetIVSText(offered)}\n努力值:{GetEVSText(offered)}");
+                    GetSelectShinyPokeNotifyMessage(detail, offered);
+                    old_offered_cln = offered;
+                }
+            }
             // EC is detectable at the start of the animation.
             var newEC = await SwitchConnection.ReadBytesAbsoluteAsync(BoxStartOffset, 8, token).ConfigureAwait(false);
             if (!newEC.SequenceEqual(oldEC))
             {
-                await Task.Delay(25_000, token).ConfigureAwait(false);
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start(); // 开始计时
+                //这里有25秒的等待动画
+                await Task.Delay(8000, token).ConfigureAwait(false);
+                using (var cts = new CancellationTokenSource()) // 创建CancellationTokenSource
+                {
+                    List<Task<bool>> ocrTasks = new List<Task<bool>>();
+                    Dictionary<int, ScreenCaptureResult> screenCaptureResults = new Dictionary<int, ScreenCaptureResult>();
+                    for (int waitSecond = 8; waitSecond <= 15; waitSecond++)
+                    {
+                        ocrTasks.Add(Task.Run(async () =>
+                        {
+                            // 检查取消请求
+                            if (cts.Token.IsCancellationRequested)
+                            {
+                                return false;
+                            }
+                            ScreenCaptureResult screenCaptureResult = await CaptureScreenWithAll(cts.Token);
+                            if (!string.IsNullOrEmpty(screenCaptureResult.FilePath))
+                            {
+                                int captureSecond = waitSecond; // 因为是异步，需要确保waitSecond的值被正确捕获
+                                lock (screenCaptureResults)
+                                {
+                                    screenCaptureResults[captureSecond] = screenCaptureResult;// 存储到字典中
+                                }
+                                Log($"在交换动画第{captureSecond}秒截图[{screenCaptureResults[captureSecond].FilePath}],已耗时[{stopwatch.Elapsed.Seconds}]秒");
+                                string OCRText = await Common.ImageOCRChinese(screenCaptureResults[captureSecond].FilePath);
+                                bool found = Common.ContainsAllSubstrings(OCRText, new[] { "将", "给" });
+                                if (found)
+                                {
+                                    tradeFinishedRecord.Image1 = screenCaptureResults[captureSecond].Base64String;
+                                    Log($"在交换动画第{captureSecond}秒的时候发现传送动画");
+                                }
+                                else
+                                {
+                                    Log($"在交换动画第{captureSecond}秒的时候还没发现传送动画");
+                                }
+                                return found; // 返回是否找到的结果
+                            }
+                            else
+                            {
+                                return false;
+                            }
+
+                        }, cts.Token));
+                        await Task.Delay(1000, token).ConfigureAwait(false);
+                    }
+                    // 使用 WhenAny 来等待第一个完成的任务，并检查其结果
+                    while (ocrTasks.Any())
+                    {
+                        var firstTask = await Task.WhenAny(ocrTasks);
+                        ocrTasks.Remove(firstTask);
+
+                        if (await firstTask) // 如果找到了匹配项
+                        {
+                            cts.Cancel(); // 请求取消所有其他任务
+                        }
+                    }
+                    // 可以在这里处理screenCaptureResults字典
+                    foreach (var kvp in screenCaptureResults)
+                    {
+                        Common.DeleteFile(kvp.Value.FilePath);// 删除文件
+                    }
+                }
+                // 如果没有任务找到匹配项，则执行这里的代码
+                stopwatch.Stop(); // 停止计时
+                // 如果还需要等待到25秒，则执行下面的代码
+                if (stopwatch.Elapsed.Seconds < 25)
+                {
+                    Log($"已耗时[{stopwatch.Elapsed.Seconds}]秒,还需倒计时[{(25 - stopwatch.Elapsed.Seconds)}]秒");
+                    await Task.Delay((25 - stopwatch.Elapsed.Seconds) * 1000, token).ConfigureAwait(false);
+                }
                 return PokeTradeResult.Success;
             }
         }
         // If we don't detect a B1S1 change, the trade didn't go through in that time.
-        return PokeTradeResult.TrainerTooSlow;
+        var FinalNewEC = await SwitchConnection.ReadBytesAbsoluteAsync(BoxStartOffset, 8, token).ConfigureAwait(false);
+        if (FinalNewEC.SequenceEqual(oldEC))
+        {
+            return PokeTradeResult.TrainerTooSlow;
+        }
+        return PokeTradeResult.Success;
     }
 
     // Upon connecting, their Nintendo ID will instantly update.
     protected virtual async Task<bool> WaitForTradePartner(CancellationToken token)
     {
         Log("Waiting for trainer...");
+        Hub.Config.Trade.TradeWaitTime = 20;//朱紫写死20秒等待
         int ctr = (Hub.Config.Trade.TradeWaitTime * 1_000) - 2_000;
         await Task.Delay(2_000, token).ConfigureAwait(false);
         while (ctr > 0)
@@ -509,6 +791,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             var newNID = await GetTradePartnerNID(TradePartnerNIDOffset, token).ConfigureAwait(false);
             if (newNID != 0)
             {
+                Log($"[WaitForTradePartner]发现了交换对象！");
                 TradePartnerOfferedOffset = await SwitchConnection.PointerAll(Offsets.LinkTradePartnerPokemonPointer, token).ConfigureAwait(false);
                 return true;
             }
@@ -976,4 +1259,157 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             Log($"Left the Barrier. Count: {Hub.BotSync.Barrier.ParticipantCount}");
         }
     }
+
+    public class ScreenCaptureResult
+    {
+        public string Base64String = "";
+        public string FilePath = "";
+    }
+
+    /// <summary>
+    /// 截取当前屏幕返回base64的字符串以及文件路径
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    private async Task<ScreenCaptureResult> CaptureScreenWithAll(CancellationToken token)
+    {
+        ScreenCaptureResult captureResult = new ScreenCaptureResult();
+        try
+        {
+            byte[] screenData = await SwitchConnection.CaptureCurrentScreen(token).ConfigureAwait(false);
+            // 将字节数组转换为Base64字符串
+            captureResult.Base64String = Convert.ToBase64String(screenData);
+            // 获取当前日期和时间
+            DateTime now = DateTime.Now;
+            // 格式化日期和时间
+            string formattedDateTime = now.ToString("yyyyMMddHHmmssfff");
+            string screenDir = "D:\\SwitchScreen";
+            // 检查目录是否存在
+            if (!Directory.Exists(screenDir))
+            {
+                // 如果目录不存在，则创建它
+                Directory.CreateDirectory(screenDir);
+            }
+            captureResult.FilePath = $@"{screenDir}\{formattedDateTime}.jpg";
+            System.IO.File.WriteAllBytes(captureResult.FilePath, screenData);
+            return captureResult;
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogInfo("保存屏幕截图时出错：" + ex.Message, "截图");
+            return captureResult;
+        }
+    }
+
+    /// <summary>
+    /// 截取当前屏幕返回文件路径
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    private async Task<ScreenCaptureResult> CaptureScreenWithPath(CancellationToken token)
+    {
+        ScreenCaptureResult captureResult = new ScreenCaptureResult();
+        try
+        {
+            byte[] screenData = await SwitchConnection.CaptureCurrentScreen(token).ConfigureAwait(false);
+            // 获取当前日期和时间
+            DateTime now = DateTime.Now;
+            // 格式化日期和时间
+            string formattedDateTime = now.ToString("yyyyMMddHHmmssfff");
+            string screenDir = "D:\\SwitchScreen";
+            // 检查目录是否存在
+            if (!Directory.Exists(screenDir))
+            {
+                // 如果目录不存在，则创建它
+                Directory.CreateDirectory(screenDir);
+            }
+            captureResult.FilePath = $@"{screenDir}\{formattedDateTime}.jpg";
+            System.IO.File.WriteAllBytes(captureResult.FilePath, screenData);
+            return captureResult;
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogInfo("保存屏幕截图时出错：" + ex.Message, "截图");
+            return captureResult;
+        }
+    }
+
+    /// <summary>
+    /// 截取当前屏幕返回base64的地址
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    private async Task<ScreenCaptureResult> CaptureScreenWithBase64(CancellationToken token)
+    {
+        ScreenCaptureResult captureResult = new ScreenCaptureResult();
+        try
+        {
+            byte[] screenData = await SwitchConnection.CaptureCurrentScreen(token).ConfigureAwait(false);
+            // 将字节数组转换为Base64字符串
+            captureResult.Base64String = Convert.ToBase64String(screenData);
+            return captureResult;
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogInfo("保存屏幕截图时出错：" + ex.Message, "截图");
+            return captureResult;
+        }
+    }
+
+    // 应该是在野外使用的，打开X菜单，然后选中宝可梦盒子
+    // The cursor should be positioned over Link Trade.
+    private async Task<bool> OpenPokemonBox(CancellationToken token)
+    {
+        if (!await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
+            await RecoverToOverworld(token).ConfigureAwait(false);
+
+        Log("执行OpenPokemonBox方法，正在打开宝可梦盒子");
+
+        // Open the X Menu.
+        await Click(X, 1_000, token).ConfigureAwait(false);
+
+        //滚动到主菜单的底部，这样我们就不需要关心Picnic是否已解锁。
+        await Click(DRIGHT, 0_300, token).ConfigureAwait(false);
+        await PressAndHold(DDOWN, 1_000, 1_000, token).ConfigureAwait(false);
+        await Click(DUP, 0_200, token).ConfigureAwait(false);
+        await Click(DUP, 0_200, token).ConfigureAwait(false);
+        await Click(DUP, 0_200, token).ConfigureAwait(false);
+        await Click(DUP, 0_200, token).ConfigureAwait(false);
+        await Click(DUP, 0_200, token).ConfigureAwait(false);
+        await Click(A, 1_000, token).ConfigureAwait(false);
+        Log("已打开宝可梦盒子");
+        return true;
+    }
+
+    /// <summary>
+    /// 退出到野外
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    private async Task ExitPreviewToOverWorld(CancellationToken token)
+    {
+        await Task.Delay(0_300, token).ConfigureAwait(false);
+        if (await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
+            return;
+
+        // 首先确保我们在盒子中.
+        Log("关闭宝可梦盒子...");
+        await Click(B, 1_000, token).ConfigureAwait(false);
+        await Task.Delay(0_500, token).ConfigureAwait(false);
+
+        await Click(B, 1_000, token).ConfigureAwait(false);
+        await Task.Delay(0_500, token).ConfigureAwait(false);
+
+        await Click(B, 1_000, token).ConfigureAwait(false);
+        await Task.Delay(0_500, token).ConfigureAwait(false);
+    }
+}
+
+public class TradeFinishedImageRecord
+{
+    public string Image1 = "";
+    public string Image2 = "";
+    public string Image3 = "";
+    public string Image4 = "";
+    public string Image5 = "";
 }

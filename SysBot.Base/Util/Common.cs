@@ -16,6 +16,11 @@ using SimpleJSON;
 //using Sdcb.PaddleOCR;
 //using Sdcb.PaddleOCR.Models.Local;
 using System.Diagnostics;
+using Sdcb.PaddleOCR.Models;
+using Sdcb.PaddleOCR;
+using Sdcb.PaddleInference;
+using OpenCvSharp;
+using Sdcb.PaddleOCR.Models.Local;
 
 namespace SysBot.Base
 {
@@ -529,57 +534,57 @@ namespace SysBot.Base
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        //public static async Task<string> ImageOCRChinese(string filePath)
-        //{
-        //    FullOcrModel model = LocalFullModels.ChineseV3;
-        //    Stopwatch stopwatch = new Stopwatch();
-        //    try
-        //    {
-        //        stopwatch.Start(); // 开始计时
-        //        string ocrResult = await Task.Run(() =>
-        //        {
-        //            PaddleOcrAll ?paddleOcr = default;
-        //            try
-        //            {
-        //                paddleOcr = new PaddleOcrAll(model, PaddleDevice.Mkldnn())
-        //                {
-        //                    AllowRotateDetection = true,
-        //                    Enable180Classification = false,
-        //                };
+        public static async Task<string> ImageOCRChinese(string filePath)
+        {
+            FullOcrModel model = LocalFullModels.ChineseV3;
+            Stopwatch stopwatch = new Stopwatch();
+            try
+            {
+                stopwatch.Start(); // 开始计时
+                string ocrResult = await Task.Run(() =>
+                {
+                    PaddleOcrAll? paddleOcr = default;
+                    try
+                    {
+                        paddleOcr = new PaddleOcrAll(model, PaddleDevice.Mkldnn())
+                        {
+                            AllowRotateDetection = true,
+                            Enable180Classification = false,
+                        };
 
-        //                using (Mat src = Cv2.ImRead(filePath, ImreadModes.Color))
-        //                {
-        //                    if (src.Empty())
-        //                    {
-        //                        throw new FileNotFoundException("无法加载图像文件", filePath);
-        //                    }
+                        using (Mat src = Cv2.ImRead(filePath, ImreadModes.Color))
+                        {
+                            if (src.Empty())
+                            {
+                                throw new FileNotFoundException("无法加载图像文件", filePath);
+                            }
 
-        //                    PaddleOcrResult result = paddleOcr.Run(src);
+                            PaddleOcrResult result = paddleOcr.Run(src);
 
-        //                    //foreach (PaddleOcrResultRegion region in result.Regions)
-        //                    //{
-        //                    //    LogUtil.LogInfo($"Text: {region.Text}, Score: {region.Score}, BoundingBoxCenter: {region.Rect.Center}, BoundingBoxSize: {region.Rect.Size}, Angle: {region.Rect.Angle}", "OCR识别");
-        //                    //}
+                            //foreach (PaddleOcrResultRegion region in result.Regions)
+                            //{
+                            //    LogUtil.LogInfo($"Text: {region.Text}, Score: {region.Score}, BoundingBoxCenter: {region.Rect.Center}, BoundingBoxSize: {region.Rect.Size}, Angle: {region.Rect.Angle}", "OCR识别");
+                            //}
 
-        //                    return result.Text;
-        //                }
-        //            }
-        //            finally
-        //            {
-        //                paddleOcr?.Dispose(); // 确保在完成后释放资源
-        //            }
-        //        });
-        //        stopwatch.Stop(); // 停止计时
-        //        return ocrResult;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        stopwatch.Stop(); // 停止计时
-        //        LogUtil.LogError($"OCR 识别过程中发生错误: {ex.Message},耗时{stopwatch.ElapsedMilliseconds}毫秒", "OCR识别");
-        //        // 根据需要处理异常，例如返回 null 或空字符串
-        //        return ""; // 或者 throw; 如果您想要让调用者知道发生了错误
-        //    }
-        //}
+                            return result.Text;
+                        }
+                    }
+                    finally
+                    {
+                        paddleOcr?.Dispose(); // 确保在完成后释放资源
+                    }
+                });
+                stopwatch.Stop(); // 停止计时
+                return ocrResult;
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop(); // 停止计时
+                LogUtil.LogError($"OCR 识别过程中发生错误: {ex.Message},耗时{stopwatch.ElapsedMilliseconds}毫秒", "OCR识别");
+                // 根据需要处理异常，例如返回 null 或空字符串
+                return ""; // 或者 throw; 如果您想要让调用者知道发生了错误
+            }
+        }
 
         /// <summary>
         /// 包含是否同时包含多个字符串

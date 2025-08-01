@@ -331,7 +331,35 @@ public class MiraiQQBot<T> where T : PKM, new()
     {
         await Task.Run(() =>
         {
-            SendObject.SendMsg(groupId, MsgTo.group, new List<MsgJson> { new TextJson($"{messageText}"), new ImageJson(base64) }, source_message_id);
+            // 创建消息列表并初始化文本消息
+            List<MsgJson> msgList = new List<MsgJson>();
+            if (!string.IsNullOrEmpty(messageText))
+            {
+                msgList.Add(new TextJson(messageText));
+            }
+
+            // 处理图片base64（支持#分割的多个图片）
+            if (!string.IsNullOrEmpty(base64))
+            {
+                // 按#分割base64字符串
+                string[] base64Array = base64.Split(new[] { '#' }, StringSplitOptions.RemoveEmptyEntries);
+
+                // 为每个有效的base64字符串创建ImageJson
+                foreach (string b64 in base64Array)
+                {
+                    string trimmed = b64.Trim();
+                    if (!string.IsNullOrEmpty(trimmed))
+                    {
+                        msgList.Add(new ImageJson(trimmed));
+                    }
+                }
+            }
+
+            // 发送消息
+            if (msgList.Count > 0)
+            {
+                SendObject.SendMsg(groupId, MsgTo.group, msgList, source_message_id);
+            }
         });
     }
 }

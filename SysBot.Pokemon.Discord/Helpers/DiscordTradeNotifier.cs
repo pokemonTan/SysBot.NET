@@ -132,7 +132,7 @@ public class DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, int Code
     public void TradePreviewPokemon(PokeRoutineExecutor<T> routine, string base64Image1, string base64Image2, string base64Image3, PokeTradeDetail<T> info)
     {
         var receive = Data.Species == 0 ? string.Empty : $" ({Data.Nickname})";
-        var text = $"\n派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}";
+        var text = $"派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}";
         if (Data.IsEgg)
         {
             text += $"\n蛋属性分析:宝可梦[{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}],球种:{ShowdownTranslator<T>.GameStringsZh.balllist[Data.Ball]},个体:{Data.IV_HP} HP / {Data.IV_ATK} 攻击 / {Data.IV_DEF} 防御 / {Data.IV_SPA} 特攻 / {Data.IV_SPD} 特防 / {Data.IV_SPE} 速度,需要的孵化圈数[{Data.OriginalTrainerFriendship}],是否闪光:{(Data.IsShiny ? "是" : "不闪")} \n状态:预览";
@@ -156,7 +156,7 @@ public class DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, int Code
         var message = $"I'm waiting for you{trainer}! My IGN is {routine.InGameName}.";
         message += $" Your trade code is: {info.Code:0000 0000}";
         LogUtil.LogText(message);
-        var text = $"\n派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}\n状态:搜索中\n我会等你[{second}]秒,我的游戏名是[{routine.InGameName}]";
+        var text = $"派送:{ShowdownTranslator<T>.GameStringsZh.Species[Data.Species]}\n密码:{info.Code:0000 0000}\n状态:搜索中\n我会等你[{second}]秒,我的游戏名是[{routine.InGameName}]";
         List<T> batchPKMs = (List<T>)info.Context.GetValueOrDefault("batch", new List<T>());
         if (batchPKMs.Count > 1)
         {

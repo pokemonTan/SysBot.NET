@@ -5,8 +5,8 @@ namespace NapCatScript.Core.Services;
 /// </summary>
 public static class Config
 {
-    public const string URI = "ws://39.108.178.212:3001/?access_token=G5.Zk.IqX.";
-    public const string HttpURI = "http://39.108.178.212:3000/?access_token=p2?4UpMx9r";
+    public const string URI = "";
+    public const string HttpURI = "";
     public const string DeepSeekKey = "DeepSeekAPIKey";
     public const string RootId = "RootID";
     public const string BootId = "BootID";

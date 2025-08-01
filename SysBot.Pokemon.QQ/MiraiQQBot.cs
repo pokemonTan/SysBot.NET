@@ -28,16 +28,16 @@ public class MiraiQQBot<T> where T : PKM, new()
     internal static TradeQueueInfo<T> Info => Hub.Queues.Info;
     internal static QQSettings Settings = default!;
 
-    public static string SocketUri => CoreConfigValueAndObject.SocketUri;
-    public static string HttpUri => CoreConfigValueAndObject.HttpUri;
-    public static string RootId => CoreConfigValueAndObject.RootId;
-    public static string BotId => CoreConfigValueAndObject.BotId;
+    public static string SocketUri = "";
+    public static string SocketAccessToken = "";
+    public static string HttpUri = "";
+    public static string HttpAccessToken = "";
     public static ClientWebSocket Socket { get; private set; } = new ClientWebSocket();
     public static CancellationTokenSource Cts { get; } = new CancellationTokenSource();
-    public static Send SendObject => CoreConfigValueAndObject.SendObject;
+    public static Send SendObject { get; set; } = default!;
     public static List<MsgInfo> NoPMesgList { get; } = new List<MsgInfo>();
     public static Random Rand { get; } = new Random();
-    public static List<PluginType> Plugins => CoreConfigValueAndObject.Plugins;
+    public static List<PluginType> Plugins => [];
     public static long LifeTime { get; private set; } = 0;
     public static long OldLifeTime { get; private set; } = 0;
     public static long Seconds { get; private set; } = 0;
@@ -51,7 +51,16 @@ public class MiraiQQBot<T> where T : PKM, new()
     {
         Runner = runner;
         Settings = settings;
+        SocketUri = Settings.SelectedBotConfig?.WsUrl ?? "";
+        SocketAccessToken = Settings.SelectedBotConfig?.WsAccessToken ?? "";
+        HttpUri = Settings.SelectedBotConfig?.HttpUrl ?? "";
+        HttpAccessToken = Settings.SelectedBotConfig?.HttpAccessToken ?? "";
+        SendObject = new Send(HttpUri, HttpAccessToken);
         Hub = hub;
+        Debug.WriteLine(SocketUri);
+        Debug.WriteLine(SocketAccessToken);
+        Debug.WriteLine(HttpUri);
+        Debug.WriteLine(HttpAccessToken);
         _ = InitializeAsync(); // 启动异步初始化，不阻塞UI
     }
 
@@ -89,7 +98,7 @@ public class MiraiQQBot<T> where T : PKM, new()
     /// <returns></returns>
     private bool IsBotOrNotTargetGroup(MsgInfo mesg)
     {
-        return !InArray(mesg.GroupId, Settings.GroupIdList.Split(",")) || mesg.SenderId == Settings.QQ.ToString();
+        return !InArray(mesg.GroupId, Settings.GroupIdList.Split(",")) || mesg.SenderId == Settings.SelectedBotConfig?.QQ.ToString();
     }
 
     // 修正 ReceiveAsync 方法中的消息接收逻辑
@@ -97,7 +106,7 @@ public class MiraiQQBot<T> where T : PKM, new()
     {
         try
         {
-            await ConnectToWebsocket(Socket, SocketUri);
+            await ConnectToWebsocket(Socket, SocketUri, SocketAccessToken);
             State = ConnectionState.Open;
 
             while (!Cts.Token.IsCancellationRequested)
@@ -219,8 +228,9 @@ public class MiraiQQBot<T> where T : PKM, new()
         return Socket.State == WebSocketState.Open && State == ConnectionState.Open;
     }
 
-    private static async Task ConnectToWebsocket(ClientWebSocket socket, string uri)
+    private static async Task ConnectToWebsocket(ClientWebSocket socket, string baseUrl, string accessToken)
     {
+        string uri = $"{baseUrl}?access_token={accessToken}";
         if (socket.State == WebSocketState.Open)
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "重新连接", Cts.Token);
 
@@ -247,7 +257,7 @@ public class MiraiQQBot<T> where T : PKM, new()
                 await Socket.CloseAsync((WebSocketCloseStatus)1006, "重连", Cts.Token);
 
             Socket = new ClientWebSocket();
-            await ConnectToWebsocket(Socket, uri);
+            await ConnectToWebsocket(Socket, uri, SocketAccessToken);
             return true;
         }
         catch

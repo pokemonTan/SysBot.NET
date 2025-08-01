@@ -81,8 +81,7 @@ public class PokeBotRunnerImpl<T> : PokeBotRunner<T> where T : PKM, new()
 
     private void AddQQBot(QQSettings config)
     {
-        if (string.IsNullOrWhiteSpace(config.VerifyKey) || string.IsNullOrWhiteSpace(config.Address)) return;
-        if (string.IsNullOrWhiteSpace(config.QQ.ToString()) || string.IsNullOrWhiteSpace(config.GroupIdList)) return;
+        if ((config.SelectedBotConfig?.QQ == 0) || string.IsNullOrWhiteSpace(config.GroupIdList)) return;
         if (QQ != null) return;
         //add qq bot
         QQ = new MiraiQQBot<T>(config, Hub, this);

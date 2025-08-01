@@ -57,10 +57,6 @@ public class MiraiQQBot<T> where T : PKM, new()
         HttpAccessToken = Settings.SelectedBotConfig?.HttpAccessToken ?? "";
         SendObject = new Send(HttpUri, HttpAccessToken);
         Hub = hub;
-        Debug.WriteLine(SocketUri);
-        Debug.WriteLine(SocketAccessToken);
-        Debug.WriteLine(HttpUri);
-        Debug.WriteLine(HttpAccessToken);
         _ = InitializeAsync(); // 启动异步初始化，不阻塞UI
     }
 
@@ -237,7 +233,7 @@ public class MiraiQQBot<T> where T : PKM, new()
         try
         {
             await socket.ConnectAsync(new Uri(uri), Cts.Token);
-            Debug.WriteLine("WebSocket连接成功");
+            LogUtil.LogInfo("WebSocket连接成功", "QQ机器人");
             State = ConnectionState.Open;
         }
         catch (Exception e)

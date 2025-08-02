@@ -79,8 +79,6 @@ public class GameOTInfo
 
 public class PsModule<T>  where T : PKM, new()
 {
-    public bool? IsEnable { get; set; } = true;
-
     public  void Execute(MsgInfo mesg)
     {
         if (!mesg.IsAtRobot || (mesg.MessageType != "group")) return;
@@ -105,7 +103,7 @@ public class PsModule<T>  where T : PKM, new()
                 string? repsonse_msg = response.Msg ?? "";
                 if (repsonse_code == 200)
                 {
-                    LogUtil.LogInfo($"{qq}-{repsonse_msg}", "测试");
+                    LogUtil.LogInfo($"{qq}-{repsonse_msg}", "查询瓜瓜币是否充足");
                     if (response.Data != null)
                     {
                         PokemonData response_data = response.Data;
@@ -152,7 +150,7 @@ public class PsModule<T>  where T : PKM, new()
                 else
                 {
                     MiraiQQBot<T>.SendGroupTextMessage(botQQ, groupId, repsonse_msg, sourceMessageId);
-                    LogUtil.LogInfo($"{qq}-{repsonse_msg}", "测试");
+                    LogUtil.LogInfo($"{qq}-{repsonse_msg}", "查询瓜瓜币是否充足");
                 }
 
             }
@@ -226,7 +224,7 @@ public class PsModule<T>  where T : PKM, new()
                 if (repsonse_code == 200)
                 {
 
-                    LogUtil.LogInfo($"{qq}-{repsonse_msg}", "测试");
+                    LogUtil.LogInfo($"{qq}-{repsonse_msg}", "查询瓜瓜币是否充足");
                     if (response.Data != null)
                     {
                         PokemonData response_data = response.Data;

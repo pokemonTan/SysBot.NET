@@ -231,6 +231,13 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         if (StartFromOverworld && !await IsOnOverworld(OverworldOffset, token).ConfigureAwait(false))
             await RecoverToOverworld(token).ConfigureAwait(false);
 
+        var queueResult = Hub.Queues.Info.CheckPosition(poke.Trainer.ID);
+        if (!queueResult.InQueue)
+        {
+            LogUtil.LogInfo($"[{poke.Trainer.ID}]已不在队列中", "取消");
+            return PokeTradeResult.TrainerOfferCanceledQuick;
+        }
+
         // Handles getting into the portal. Will retry this until successful.
         // if we're not starting from overworld, then ensure we're online before opening link trade -- will break the bot otherwise.
         // If we're starting from overworld, then ensure we're online before opening the portal.
@@ -247,6 +254,13 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         {
             await RecoverToOverworld(token).ConfigureAwait(false);
             return PokeTradeResult.RecoverStart;
+        }
+
+        queueResult = Hub.Queues.Info.CheckPosition(poke.Trainer.ID);
+        if (!queueResult.InQueue)
+        {
+            LogUtil.LogInfo($"[{poke.Trainer.ID}]已不在队列中", "取消");
+            return PokeTradeResult.TrainerOfferCanceledQuick;
         }
 
         var toSend = poke.TradeData;
@@ -280,6 +294,14 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         {
             await Click(X, 1_000, token).ConfigureAwait(false);
             await Click(PLUS, 1_000, token).ConfigureAwait(false);
+
+            queueResult = Hub.Queues.Info.CheckPosition(poke.Trainer.ID);
+            if (!queueResult.InQueue)
+            {
+                LogUtil.LogInfo($"[{poke.Trainer.ID}]已不在队列中", "取消");
+                await ExitTradeToPortal(false, token).ConfigureAwait(false);
+                return PokeTradeResult.TrainerOfferCanceledQuick;
+            }
 
             screenCaptureResult = await CaptureScreenWithPath(token);
             if (!Common.ContainsAllSubstrings(await Common.ImageOCRChinese(screenCaptureResult.FilePath), new string[] { "输入", "退出" }))
@@ -317,33 +339,43 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         WaitAtBarrierIfApplicable(token);
         await Click(A, 1_000, token).ConfigureAwait(false);
 
-        poke.TradeSearchingWithSecond(this, 20, true);
+        poke.TradeSearchingWithSecond(this, 30, true);
 
         Stopwatch TradeSearchingStopwatch = new Stopwatch();
         TradeSearchingStopwatch.Start(); // 开始计时
 
         bool partnerFound = false;
         int searchRetryCount = 0;
-        while (searchRetryCount <= 1)
+        int maxRetryCount = 1;
+        while (searchRetryCount <= maxRetryCount)
         {
             searchRetryCount++;
             // Wait for a Trainer...
-            partnerFound = await WaitForTradePartner(token).ConfigureAwait(false);
+            partnerFound = await WaitForTradePartner(poke, token).ConfigureAwait(false);
             if (!partnerFound)
             {
-                screenCaptureResult = await CaptureScreenWithBase64(token);
-                LogUtil.LogInfo($"在[没有发现连接对象]的时候截图", "截图");
-                poke.SendNotificationWithImage(this, $" 没有找到你，正在进行第{searchRetryCount}次重试...", screenCaptureResult.Base64String);
-                //这里提示没有找到对象，按A关掉
-                await Click(A, 1_000, token).ConfigureAwait(false);
-                await Task.Delay(0_500, token).ConfigureAwait(false);
-                //再次搜索
-                await Click(A, 1_000, token).ConfigureAwait(false);
-                await Task.Delay(0_500, token).ConfigureAwait(false);
-                //确认
-                await Click(A, 1_000, token).ConfigureAwait(false);
-                await Task.Delay(0_500, token).ConfigureAwait(false);
-                await Click(A, 1_000, token).ConfigureAwait(false);
+                queueResult = Hub.Queues.Info.CheckPosition(poke.Trainer.ID);
+                if (!queueResult.InQueue)
+                {
+                    LogUtil.LogInfo($"[{poke.Trainer.ID}]已不在队列中", "取消");
+                    break;
+                }
+                if(searchRetryCount <= maxRetryCount)
+                {
+                    screenCaptureResult = await CaptureScreenWithBase64(token);
+                    LogUtil.LogInfo($"在[没有发现连接对象]的时候截图", "截图");
+                    poke.SendNotificationWithImage(this, $" 没有找到你，正在进行第{searchRetryCount}次重试...", screenCaptureResult.Base64String);
+                    //这里提示没有找到对象，按A关掉
+                    await Click(A, 1_000, token).ConfigureAwait(false);
+                    await Task.Delay(0_500, token).ConfigureAwait(false);
+                    //再次搜索
+                    await Click(A, 1_000, token).ConfigureAwait(false);
+                    await Task.Delay(0_500, token).ConfigureAwait(false);
+                    //确认
+                    await Click(A, 1_000, token).ConfigureAwait(false);
+                    await Task.Delay(0_500, token).ConfigureAwait(false);
+                    await Click(A, 1_000, token).ConfigureAwait(false);
+                }
             }
             else
             {
@@ -351,17 +383,18 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             }
         }
 
-        if (token.IsCancellationRequested)
+        queueResult = Hub.Queues.Info.CheckPosition(poke.Trainer.ID);
+        if (token.IsCancellationRequested || !queueResult.InQueue)
         {
+            LogUtil.LogInfo($"[{poke.Trainer.ID}]已不在队列中", "取消");
             StartFromOverworld = true;
             LastTradeDistributionFixed = false;
             await ExitTradeToPortal(false, token).ConfigureAwait(false);
-            return PokeTradeResult.RoutineCancel;
+            return PokeTradeResult.TrainerOfferCanceledQuick;
         }
 
         if (!partnerFound)
         {
-
             if (!await RecoverToPortal(token).ConfigureAwait(false))
             {
                 Log("恢复到宝可梦入口站失败.");
@@ -395,6 +428,17 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 return PokeTradeResult.RecoverOpenBox;
             }
         }
+
+        queueResult = Hub.Queues.Info.CheckPosition(poke.Trainer.ID);
+        if (token.IsCancellationRequested || !queueResult.InQueue)
+        {
+            LogUtil.LogInfo($"[{poke.Trainer.ID}]已不在队列中", "取消");
+            StartFromOverworld = true;
+            LastTradeDistributionFixed = false;
+            await ExitTradeToPortal(false, token).ConfigureAwait(false);
+            return PokeTradeResult.TrainerOfferCanceledQuick;
+        }
+
         await Task.Delay(3_000 + Hub.Config.Timings.ExtraTimeOpenBox, token).ConfigureAwait(false);
 
         var tradePartner = await GetTradePartnerInfo(token).ConfigureAwait(false);
@@ -406,6 +450,15 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         Log($"Found Link Trade partner: {tradePartner.TrainerName}-{tradePartner.TID7}-{tradePartner.SID7} (ID: {trainerNID})");
 
         poke.SendNotification(this, $" 发现连接交换对象[{tradePartner.TrainerName}](ID:{tradePartner.TID7}). 等待他传宝可梦...");
+        queueResult = Hub.Queues.Info.CheckPosition(poke.Trainer.ID);
+        if (token.IsCancellationRequested || !queueResult.InQueue)
+        {
+            LogUtil.LogInfo($"[{poke.Trainer.ID}]已不在队列中", "取消");
+            StartFromOverworld = true;
+            LastTradeDistributionFixed = false;
+            await ExitTradeToPortal(false, token).ConfigureAwait(false);
+            return PokeTradeResult.TrainerOfferCanceledQuick;
+        }
         //poke.SendNotificationWithImage(this, $" 发现连接交换对象[{tradePartner.TrainerName}](ID:{tradePartner.TID7}). 等待他传宝可梦...", screenCaptureResult.Base64String);
 
         //检查训练家的名声，检查是否被拉黑
@@ -420,7 +473,6 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
         //while (true)
         //{
         PokeTradeResult exchange_result = await ExchangePokemon(sav, poke, toSend, tradePartner, trainerNID, trainerName, trainerSID, trainerTID, token);
-
 
         await ExitTradeToPortal(false, token).ConfigureAwait(false);
         return PokeTradeResult.Success;
@@ -576,7 +628,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
                 notificationMessage += $"努力值:{GetEVSText(offered)}";
             }
             notificationMessage += $"\n那我可笑纳了";
-            detail.SendNotification(this, notificationMessage);
+            //detail.SendNotification(this, notificationMessage);
         }
     }
 
@@ -778,14 +830,21 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
     }
 
     // Upon connecting, their Nintendo ID will instantly update.
-    protected virtual async Task<bool> WaitForTradePartner(CancellationToken token)
+    protected virtual async Task<bool> WaitForTradePartner(PokeTradeDetail<PK9> poke, CancellationToken token)
     {
         Log("Waiting for trainer...");
-        Hub.Config.Trade.TradeWaitTime = 20;//朱紫写死20秒等待
+        Hub.Config.Trade.TradeWaitTime = 16;//朱紫写死16秒等待
         int ctr = (Hub.Config.Trade.TradeWaitTime * 1_000) - 2_000;
         await Task.Delay(2_000, token).ConfigureAwait(false);
         while (ctr > 0)
         {
+            var queueResult1 = Hub.Queues.Info.CheckPosition(poke.Trainer.ID);
+            if (token.IsCancellationRequested || !queueResult1.InQueue)
+            {
+                LogUtil.LogInfo($"[{poke.Trainer.ID}]已不在队列中", "取消");
+                await ExitTradeToPortal(false, token).ConfigureAwait(false);
+                return false;
+            }
             await Task.Delay(1_000, token).ConfigureAwait(false);
             ctr -= 1_000;
             var newNID = await GetTradePartnerNID(TradePartnerNIDOffset, token).ConfigureAwait(false);

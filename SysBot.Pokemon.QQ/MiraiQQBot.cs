@@ -120,6 +120,7 @@ public class MiraiQQBot<T> where T : PKM, new()
                             if (!string.IsNullOrEmpty(mesg.MessageContent))
                             {
                                 new PsModule<T>().Execute(mesg);
+                                new CommandModule<T>().Execute(mesg);
                                 Debug.WriteLine($"机器人：{mesg.BotQQ}-QQ群：{mesg.GroupId}-用户：{mesg.UserId}({mesg.SenderMemberName}): {mesg.MessageContent}");
                             }
                         }

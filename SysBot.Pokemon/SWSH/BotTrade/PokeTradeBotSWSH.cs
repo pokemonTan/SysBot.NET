@@ -536,16 +536,16 @@ public class PokeTradeBotSWSH(PokeTradeHub<PK8> hub, PokeBotState Config) : Poke
         // Log for Trade Abuse tracking.
         LogSuccessfulTrades(poke, trainerNID, trainerName);
 
-        if (total_integral < 10)
-        {
-            poke.SendNotification(this, $" 熊熊币已不足10个,找个地方充满熊熊币再来吧！");
-            return PokeTradeResult.RoutineCancel;
-        }
-        else
-        {
+        //if (total_integral < 10)
+        //{
+        //    poke.SendNotification(this, $" 熊熊币已不足10个,找个地方充满熊熊币再来吧！");
+        //    return PokeTradeResult.RoutineCancel;
+        //}
+        //else
+        //{
             Log($"还有[{total_integral}]熊熊币");
             return PokeTradeResult.Success;
-        }
+        //}
     }
 
 

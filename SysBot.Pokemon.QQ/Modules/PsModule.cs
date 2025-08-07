@@ -180,14 +180,14 @@ public class PsModule<T>  where T : PKM, new()
         }
         LogUtil.LogInfo($"接受到消息：[{firstPlain}]", "测试");
         //中英文判断
-        //if (IsChinesePS(firstPlain))
-        //{
-        //    ProcessChinesePS(botQQ, firstPlain, qq, memberName, groupId, sourceMessageId);
-        //}
-        //else if (IsPS(firstPlain))
-        //{
-        //    ProcessPS(botQQ, firstPlain, qq, memberName, groupId, sourceMessageId);
-        //}
+        if (IsChinesePS(firstPlain))
+        {
+            ProcessChinesePS(botQQ, firstPlain, qq, memberName, groupId, sourceMessageId);
+        }
+        else if (IsPS(firstPlain))
+        {
+            ProcessPS(botQQ, firstPlain, qq, memberName, groupId, sourceMessageId);
+        }
     }
 
     private void ProcessPS(long botQQ, string text, string qq, string nickName, string groupId, long sourceMessageId)

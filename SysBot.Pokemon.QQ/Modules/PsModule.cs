@@ -155,6 +155,29 @@ public class PsModule<T>  where T : PKM, new()
 
             }
         }
+        if (firstPlain.StartsWith("切换游戏") && qq == "964954800")
+        {
+            if (firstPlain.Contains("剑盾"))
+            {
+                Common.ProgramMode = 1;
+            }
+            else if(firstPlain.Contains("珍钻"))
+            {
+                Common.ProgramMode = 2;
+            }
+            else if (firstPlain.Contains("阿尔宙斯"))
+            {
+                Common.ProgramMode = 3;
+            }
+            else if (firstPlain.Contains("朱紫"))
+            {
+                Common.ProgramMode = 4;
+            }
+            else
+            {
+                return ;
+            }
+        }
         LogUtil.LogInfo($"接受到消息：[{firstPlain}]", "测试");
         //中英文判断
         //if (IsChinesePS(firstPlain))

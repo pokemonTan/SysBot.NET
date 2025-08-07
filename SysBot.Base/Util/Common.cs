@@ -46,6 +46,7 @@ namespace SysBot.Base
         public static int SoftwareId = 4;//软件ID
         public static int ExchangeMode = 0;//交换模式
         private static int gameVersion = 45;//游戏版本，44剑，45盾
+        public static int ProgramMode = 0;
         public static int GameVersion
         {
             get { return gameVersion; }

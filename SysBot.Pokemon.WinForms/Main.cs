@@ -4,6 +4,7 @@ using SysBot.Base;
 using SysBot.Pokemon.Z3;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -22,10 +23,17 @@ public sealed partial class Main : Form
     private readonly List<PokeBotState> Bots = [];
     private readonly IPokeBotRunner RunningEnvironment;
     private readonly ProgramConfig Config;
+    // 用于取消操作的取消令牌
+    private CancellationTokenSource cancellationTokenSource;
 
     public Main()
     {
         InitializeComponent();
+        // 初始化取消令牌
+        cancellationTokenSource = new CancellationTokenSource();
+
+        // 启动后台检测任务
+        StartProgramCodeCheck();
         Common.ConfigPath = Program.ConfigPath;
         PokeTradeBotSWSH.SeedChecker = new Z3SeedSearchHandler<PK8>();
         if (File.Exists(Program.ConfigPath))
@@ -55,6 +63,44 @@ public sealed partial class Main : Form
         Task.Run(BotMonitor);
 
         InitUtil.InitializeStubs(Config.Mode);
+    }
+
+    // 启动后台检测任务
+    private void StartProgramCodeCheck()
+    {
+        // 启动异步任务
+        Task.Run(async () =>
+        {
+            try
+            {
+                // 循环检测，直到取消令牌被触发
+                while (!cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    // 检测Common.ProgramCode是否大于0
+                    if (Common.ProgramMode > 0)
+                    {
+                        // 确保在UI线程执行退出操作
+                        this.Invoke(new Action(() =>
+                        {
+                            this.Close();
+                        }));
+                        return;
+                    }
+
+                    // 等待2秒，同时响应取消请求
+                    await Task.Delay(2000, cancellationTokenSource.Token);
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // 任务被取消时正常退出，无需处理
+            }
+            catch (Exception ex)
+            {
+                // 处理其他异常
+                MessageBox.Show($"检测任务发生错误: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }, cancellationTokenSource.Token);
     }
 
     private static IPokeBotRunner GetRunner(ProgramConfig cfg) => cfg.Mode switch
@@ -115,6 +161,10 @@ public sealed partial class Main : Form
 
     private void Main_FormClosing(object sender, FormClosingEventArgs e)
     {
+        if(Common.ProgramMode > 0)
+        {
+            Config.Mode = (ProgramMode)Common.ProgramMode;
+        }
         SaveCurrentConfig();
         var bots = RunningEnvironment;
         if (!bots.IsRunning)
@@ -131,6 +181,30 @@ public sealed partial class Main : Form
         ShowInTaskbar = false;
         bots.StopAll();
         Task.WhenAny(WaitUntilNotRunning(), Task.Delay(5_000)).ConfigureAwait(true).GetAwaiter().GetResult();
+        // 取消后台任务
+        cancellationTokenSource?.Cancel();
+        cancellationTokenSource?.Dispose();
+        // 如果是正常关闭且不是重启操作，询问是否重启
+        if (Common.ProgramMode > 0 && e.CloseReason == CloseReason.UserClosing)
+        {
+            // 取消当前关闭操作，先处理重启逻辑
+            e.Cancel = true;
+
+            // 获取当前程序路径
+            string exePath = Process.GetCurrentProcess().MainModule.FileName;
+
+            // 启动新进程
+            Process.Start(exePath);
+
+            // 延迟关闭当前进程，确保新进程已启动
+            Task.Delay(1000).ContinueWith(t =>
+            {
+                this.Invoke(new Action(() =>
+                {
+                    this.Close(); // 再次关闭，此时isRestarting为true，不会触发取消
+                }));
+            });
+        }
     }
 
     private void SaveCurrentConfig()

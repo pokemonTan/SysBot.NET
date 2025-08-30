@@ -96,7 +96,7 @@ public class ShowdownTranslatorDictionary
 
     public static Dictionary<string, string> languages = new Dictionary<string, string>
     {
-        { "异国", "Italian" },
+        { "异国", "Japanese" },
         { "日语", "Japanese" },
         { "英语", "English" },
         { "法语", "French" },

@@ -71,9 +71,9 @@ namespace SysBot.Pokemon
             new QQBotConfig
             {
                 Bot = QQBotList.Robot1097586712,
-                HttpUrl = "http://默认地址1:3000/", // 替换为实际地址.
+                HttpUrl = "http://8.148.29.236:3000/",
                 HttpAccessToken = "p2?4UpMx9r",
-                WsUrl = "ws://默认地址1:3001/",
+                WsUrl = "ws://8.148.29.236:3001/",
                 WsAccessToken = "G5.Zk.IqX."
             },
             new QQBotConfig
@@ -95,9 +95,9 @@ namespace SysBot.Pokemon
             new QQBotConfig
             {
                 Bot = QQBotList.Robot3263787871,
-                HttpUrl = "http://3263787871的HTTP地址/", // 替换为实际地址
+                HttpUrl = "http://8.148.65.77:3000/",
                 HttpAccessToken = "p2?4UpMx9r",
-                WsUrl = "ws://3263787871的WS地址/",
+                WsUrl = "ws://8.148.65.77:3001/",
                 WsAccessToken = "G5.Zk.IqX."
             },
             new QQBotConfig

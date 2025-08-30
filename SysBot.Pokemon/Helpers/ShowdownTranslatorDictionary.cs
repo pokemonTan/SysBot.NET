@@ -33,8 +33,10 @@ public class ShowdownTranslatorDictionary
 
     public static Dictionary<string, string> statsDict = new()
     {
+        { "hp", "HP" },
         { "生命", "HP" },
         { "攻击", "Atk" },
+        { "物攻", "Atk" },
         { "防御", "Def" },
         { "特攻", "SpA" },
         { "特防", "SpD" },

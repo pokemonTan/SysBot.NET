@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="PKHeX.Core" Version="25.6.9" />
+    <ProjectReference Include="..\PKHeX.Core\PKHeX.Core.csproj" />
     <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
   </ItemGroup>
 

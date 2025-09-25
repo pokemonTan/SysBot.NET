@@ -6,10 +6,10 @@
     <PackageReference Include="Google.Apis.Core" Version="1.69.0" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.69.0.3680" />
     <PackageReference Include="Google.Apis.YouTubePartner.v1" Version="1.35.1.1334" />
-    <PackageReference Include="PKHeX.Core" Version="25.6.9" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PKHeX.Core\PKHeX.Core.csproj" />
     <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
     <ProjectReference Include="..\SysBot.Pokemon\SysBot.Pokemon.csproj" />
   </ItemGroup>

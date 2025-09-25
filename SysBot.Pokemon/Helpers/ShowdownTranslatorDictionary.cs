@@ -31,6 +31,8 @@ public class ShowdownTranslatorDictionary
         {"4V0攻0速", "31 HP / 0 Atk / 31 Def / 31 SpA / 31 SpD / 0 Spe"}
     };
 
+
+
     public static Dictionary<string, string> statsDict = new()
     {
         { "hp", "HP" },
@@ -42,6 +44,41 @@ public class ShowdownTranslatorDictionary
         { "特防", "SpD" },
         { "速度", "Spe" }
     };
+
+    public static Dictionary<string, int> characteristicReversed = new()
+    {
+        {"非常喜欢吃东西", 0},
+        {"经常睡午觉", 1},
+        {"常常打瞌睡", 2},
+        {"经常乱扔东西", 3},
+        {"喜欢悠然自在", 4},
+        {"以力气大为傲", 5},
+        {"喜欢胡闹", 6},
+        {"有点容易生气", 7},
+        {"喜欢打架", 8},
+        {"血气方刚", 9},
+        {"身体强壮", 10},
+        {"抗打能力强", 11},
+        {"顽强不屈", 12},
+        {"能吃苦耐劳", 13},
+        {"善于忍耐", 14},
+        {"喜欢比谁跑得快", 15},
+        {"对声音敏感", 16},
+        {"冒冒失失", 17},
+        {"有点容易得意忘形", 18},
+        {"逃得快", 19},
+        {"好奇心强", 20},
+        {"喜欢恶作剧", 21},
+        {"做事万无一失", 22},
+        {"经常思考", 23},
+        {"一丝不苟", 24},
+        {"性格强势", 25},
+        {"有一点点爱慕虚荣", 26},
+        {"争强好胜", 27},
+        {"不服输", 28},
+        {"有一点点固执", 29}
+    };
+
 
     public static Dictionary<string, string> ribbonMarks = new()
     {

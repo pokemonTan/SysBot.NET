@@ -73,39 +73,59 @@ public static class ReceiveMsg
         
         return (value.msgInfo, msg);
     }
-    
+
     /// <summary>
     /// 使用已经过滤的Json主体，获取MesgInfo
     /// </summary>
     private static MsgInfo? GetMesgInfo(this JsonElement json)
     {
-        bool message_type_bool = json.TryGetProperty("message_type", out JsonElement message_type);
-        bool user_id_bool = json.TryGetProperty("user_id", out JsonElement user_id);
-        bool group_id_bool = json.TryGetProperty("group_id", out JsonElement group_id);
-        bool message_bool = json.TryGetProperty("raw_message", out JsonElement raw_message);
+        // 1. 提取核心必选字段（message_type、user_id、raw_message），缺失则返回null
+        bool hasMessageType = json.TryGetProperty("message_type", out JsonElement messageType);
+        bool hasUserId = json.TryGetProperty("user_id", out JsonElement userId);
+        bool hasRawMessage = json.TryGetProperty("raw_message", out JsonElement rawMessage);
 
-        if (!user_id_bool || !message_bool || !message_type_bool)
+        // 必选字段缺失，直接返回null（避免后续空引用）
+        if (!hasMessageType || !hasUserId || !hasRawMessage)
             return null;
 
-        string? user_name = "";
-        string? member_nickname = "";
-        string? role = "";
-        long bot_qq = 0;
-        if(json.TryGetProperty("self_id", out JsonElement botQQValue))
+        // 2. 初始化变量（避免默认空字符串""，用null更符合“未获取”的语义）
+        string? userName = null;       // 基础昵称（sender.nickname）
+        string? memberNickname = null; // 群名片（sender.card，仅群消息有效）
+        string? role = null;           // 用户角色（仅群消息有效）
+        long botQq = 0;                // 机器人QQ号
+        string messageTypeStr = messageType.GetString() ?? string.Empty; // 消息类型（group/private等）
+
+        // 3. 提取机器人QQ号（self_id）
+        if (json.TryGetProperty("self_id", out JsonElement botQqValue))
         {
-            bot_qq = botQQValue.GetInt64();
+            botQq = botQqValue.GetInt64();
         }
-        if (json.TryGetProperty("sender", out JsonElement sender)) {
-            if (sender.TryGetProperty("nickname", out JsonElement value))
+
+        // 4. 提取发送者信息（sender节点）
+        if (json.TryGetProperty("sender", out JsonElement sender))
+        {
+            // 4.1 优先获取基础昵称（nickname）
+            if (sender.TryGetProperty("nickname", out JsonElement nicknameValue))
             {
-                user_name = value.GetString();
+                userName = nicknameValue.GetString();
             }
-            if (message_type.GetString() == "group")
+
+            // 4.2 仅“群消息”（message_type=group）时，处理群名片和角色
+            if (messageTypeStr.Equals("group", StringComparison.OrdinalIgnoreCase))
             {
-                if(sender.TryGetProperty("card", out JsonElement memberNameValue))
+                // 获取群名片（card）
+                if (sender.TryGetProperty("card", out JsonElement cardValue))
                 {
-                    member_nickname = memberNameValue.GetString();
+                    memberNickname = cardValue.GetString();
                 }
+
+                // 核心逻辑：群名片为空（null/空字符串）时，使用基础昵称
+                if (string.IsNullOrEmpty(memberNickname))
+                {
+                    memberNickname = userName;
+                }
+
+                // 获取用户角色（role）
                 if (sender.TryGetProperty("role", out JsonElement roleValue))
                 {
                     role = roleValue.GetString();
@@ -113,49 +133,56 @@ public static class ReceiveMsg
             }
         }
 
+        // 5. 解析消息链（判断是否@机器人、提取首个纯文本）
         bool isAtRobot = false;
-        string firstPlain = "";
+        string firstPlain = string.Empty;
         if (json.TryGetProperty("message", out JsonElement message))
         {
             MessageChainResult messageChainResult = new MessageChainResult();
-            messageChainResult.AnalysisMessageChain(bot_qq, message);
-            firstPlain = messageChainResult.FirstPlain;
-            if (messageChainResult.IsAtRobot)
-            {
-                isAtRobot = true;
-            }
+            messageChainResult.AnalysisMessageChain(botQq, message);
+            firstPlain = messageChainResult.FirstPlain ?? string.Empty;
+            isAtRobot = messageChainResult.IsAtRobot;
         }
-        
-        JsonElement time;
-        double d1 = 0d;
-        if (json.TryGetProperty("time", out time)) {
-            d1 = time.GetDouble();
+
+        // 6. 提取消息时间（time）
+        double messageTime = 0d;
+        if (json.TryGetProperty("time", out JsonElement timeValue))
+        {
+            messageTime = timeValue.GetDouble();
         }
-        
-        JsonElement message_id;
-        long msgid = 0L;
-        if (json.TryGetProperty("message_id", out message_id)) {
-            msgid = message_id.GetInt64();
+
+        // 7. 提取消息ID（message_id）
+        long messageId = 0L;
+        if (json.TryGetProperty("message_id", out JsonElement messageIdValue))
+        {
+            messageId = messageIdValue.GetInt64();
         }
-        
+
+        // 8. 提取群ID（group_id，非必选，仅群消息有值）
+        string groupId = string.Empty;
+        if (json.TryGetProperty("group_id", out JsonElement groupIdValue))
+        {
+            groupId = groupIdValue.GetInt64().ToString();
+        }
+
+        // 9. 构造并返回MsgInfo对象（统一处理null为空字符串，避免外部空引用）
         return new MsgInfo()
         {
-            BotQQ = bot_qq,
-            MessageContent = raw_message.GetString()!, 
-            MessageType = message_type.GetString()!,
-            UserId = user_id.GetUInt64().ToString(), 
-            SenderId = user_id.GetUInt64().ToString(),
-            GroupId = group_id_bool ? group_id.GetInt64().ToString() : /*default*/string.Empty, 
-            UserName = user_name ?? "",
-            SenderMemberName = member_nickname ?? "",
-            Time = d1,
-            MessageId = msgid,
-            Role = role ?? "",
+            BotQQ = botQq,
+            MessageContent = rawMessage.GetString() ?? string.Empty, // 避免null
+            MessageType = messageTypeStr,
+            UserId = userId.GetUInt64().ToString(),
+            SenderId = userId.GetUInt64().ToString(),
+            GroupId = groupId,
+            UserName = userName ?? string.Empty, // 基础昵称：null→空字符串
+            SenderMemberName = memberNickname ?? string.Empty, // 群名片：null→空字符串（已确保群消息时非空则用昵称）
+            Time = messageTime,
+            MessageId = messageId,
+            Role = role ?? string.Empty, // 角色：null→空字符串
             IsAtRobot = isAtRobot,
-            FirstPlain = firstPlain,
+            FirstPlain = firstPlain
         };
     }
-
 
     /// <summary>
     /// 判断数据是否是消息，返回json主体

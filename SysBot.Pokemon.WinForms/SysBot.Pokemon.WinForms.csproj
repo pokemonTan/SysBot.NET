@@ -25,11 +25,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PKHeX.Core" Version="25.6.9" />
     <PackageReference Include="System.Resources.Extensions" Version="9.0.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PKHeX.Core\PKHeX.Core.csproj" />
     <ProjectReference Include="..\SysBot.Base\SysBot.Base.csproj" />
     <ProjectReference Include="..\SysBot.Pokemon.Discord\SysBot.Pokemon.Discord.csproj" />
     <ProjectReference Include="..\SysBot.Pokemon.QQ\SysBot.Pokemon.QQ.csproj" />
